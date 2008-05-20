@@ -1,0 +1,9 @@
+Build.PL
+Changes
+MANIFEST
+README
+lib/DBIx/SchemaChecksum.pm
+t/00-load.t
+xt/boilerplate.t
+xt/pod-coverage.t
+xt/pod.t
