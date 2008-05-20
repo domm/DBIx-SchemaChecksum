@@ -1,10 +1,12 @@
 package DBIx::SchemaChecksum;
 
-use warnings;
-use strict;
+use Moose;
 use version; our $VERSION = version->new('0.01');
 
 use DBI;
+use Digest::SHA1;
+
+has 'dbh' => (isa => 'DBI::db', is => 'ro', required => 1);
 
 =head1 NAME
 
@@ -17,6 +19,18 @@ DBIx::SchemaChecksum - Generate and compare checksums of database schematas
 =head1 METHODS 
 
 =cut
+
+=head3 calculate_checksum
+
+    my $checksum = $sc->calculate_checksum;
+
+Return the checksum (as a SHA1 digest)
+
+=cut
+
+sub calculate_checksum {
+    
+}
 
 q{ favourite record of the moment: The Dynamics - Version Excursions }
 
