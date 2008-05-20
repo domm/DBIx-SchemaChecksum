@@ -2,7 +2,10 @@ package DBIx::SchemaChecksum;
 
 use warnings;
 use strict;
-use version;our $VERSION = version->new('0.01');
+use version; our $VERSION = version->new('0.01');
+
+use Getopt::Long;
+use DBI;
 
 =head1 NAME
 
