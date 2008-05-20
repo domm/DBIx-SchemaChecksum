@@ -5,8 +5,16 @@ use version; our $VERSION = version->new('0.01');
 
 use DBI;
 use Digest::SHA1;
+use Data::Dumper;
 
-has 'dbh' => (isa => 'DBI::db', is => 'ro', required => 1);
+has 'dbh' => ( isa => 'DBI::db', is => 'ro', required => 1 );
+has 'catalog' => (is => 'ro', isa=>'Str',default=>'%');
+has 'schemata' =>
+  ( is => 'ro', isa => 'ArrayRef[Str]', default => sub { ['%'] } );
+has 'tabletype' => (is => 'ro', isa=>'Str',default=>'table');
+
+has '_schemadump'     => ( is => 'rw', isa => 'Str' );
+has '_got_schemadump' => ( is => 'rw', isa => 'Bool' );
 
 =head1 NAME
 
@@ -29,10 +37,78 @@ Return the checksum (as a SHA1 digest)
 =cut
 
 sub calculate_checksum {
-    
+    my $self = shift;
+
+    my $as_string = $self->schemadump;
+
 }
 
-q{ favourite record of the moment: The Dynamics - Version Excursions }
+=head3 schemadump
+
+    my $schemadump = $self->schemadump;
+
+Returns a string representation of the whole schema (as a Data::Dumper 
+Dump).
+
+=cut
+
+sub schemadump {
+    my $self = shift;
+    return $self->_schemadump if $self->_got_schemadump;
+
+    my $tabletype = $self->tabletype;
+    my $catalog = $self->catalog;
+
+    my $dbh = $self->dbh;
+
+    my %relevants = ();
+    foreach my $schema (@{$self->schemata}) {
+        foreach my $table ( $dbh->tables( $catalog, $schema, '%', $tabletype ) ) {
+            my %data = ( table => $table );
+
+            my $t = $table;
+            $t =~ s/^.*?\.//;
+
+            my @fks = $dbh->primary_key( $catalog, $schema, $t );
+            $data{primary_keys} = \@fks;
+
+            # columns
+            my $sth1 = $dbh->column_info( $catalog, $schema, $t, '%' );
+            if ($sth1) {
+                $data{columns} = $sth1->fetchall_arrayref(
+                {
+                    map { $_ => 1 }
+                      qw(COLUMN_NAME COLUMN_SIZE NULLABLE COLUMN_DEF ORDINAL_POSITION TYPE_NAME)
+                }
+            );
+            }
+
+            # foreign keys
+            my $sth2 = $dbh->foreign_key_info( '', '', '', '', $schema, $t );
+            if ($sth2) {
+                $data{foreign_keys} = $sth2->fetchall_arrayref(
+                    {
+                        map { $_ => 1 }
+                          qw(FK_NAME UK_NAME UK_COLUMN_NAME FK_TABLE_NAME FK_COLUMN_NAME UPDATE_RULE DELETE_RULE DEFERRABILITY)
+                    }
+                );
+            }
+
+            $relevants{$table} = \%data;
+        }
+
+    }
+    my $dumper = Data::Dumper->new( [ \%relevants ] );
+    $dumper->Sortkeys(1);
+    return scalar $dumper->Dump;
+
+
+    return $self->_schemadump('foo');
+
+}
+
+
+q{ Favourite record of the moment: The Dynamics - Version Excursions }
 
 __END__
 
@@ -91,3 +167,4 @@ under the same terms as Perl itself.
 
 =cut
 
+## Please see file perltidy.ERR
