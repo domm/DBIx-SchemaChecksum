@@ -1,6 +1,9 @@
 Revision history for DBIx-SchemaChecksum
 
-0.02-tobe
+0.02   2008-05-21 22:13:53
+    - added bin/schema_checksum.pl
+    - added docs
+    - DB connection now takes user and password as optional params
 
 
 0.01    2008-05-20 16:10:17
