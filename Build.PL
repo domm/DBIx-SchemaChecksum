@@ -19,7 +19,7 @@ my $builder = Module::Build->new(
         'MooseX::Getopt' => '0.12',
     },
     add_to_cleanup     => ['DBIx-SchemaChecksum-*'],
-    create_makefile_pl => 'traditional',
+    create_makefile_pl => 'passthrough',
 );
 
 $builder->create_build_script();
