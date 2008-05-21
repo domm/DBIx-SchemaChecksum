@@ -1,16 +1,16 @@
 use strict;
 use warnings;
-use Test::More qw(no_plan);
+use Test::More tests => 6;
+use Test::NoWarnings;
 use DBI;
 use DBIx::SchemaChecksum;
 
+my $sc = DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/base.db" );
 
-my $dbh = DBI->connect("dbi:SQLite:dbname=t/dbs/base.db");
-#my $dbh = DBI->connect("dbi:Pg:dbname=babilu");
+my $dump = $sc->schemadump;
+like( $dump, qr/first_table/,                   'found table' );
+like( $dump, qr/columns/,                       'found columns' );
+like( $dump, qr/column_name.*?id/i,             'found column id' );
+like( $dump, qr/column_name.*?a_column/i,       'found column a_column' );
+like( $dump, qr/column_name.*?another_column/i, 'found column another_column' );
 
-my $sc = DBIx::SchemaChecksum->new( dbh => $dbh );
-TODO: {
-    local $TODO="sqlite has no proper metadata info, so I cant use it for testing...";
-
-    is($sc->schemadump,'foo');
-}

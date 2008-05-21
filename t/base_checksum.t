@@ -1,16 +1,11 @@
 use strict;
 use warnings;
-use Test::More qw(no_plan);
+use Test::More tests => 2;
+use Test::NoWarnings;
 use DBI;
 use DBIx::SchemaChecksum;
 
-my $dbh = DBI->connect("dbi:SQLite:dbname=t/dbs/base.db");
+my $sc = DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/base.db" );
 
-my $sc = DBIx::SchemaChecksum->new( dbh => $dbh );
-
-
-TODO: {
-    local $TODO= "calculate_checksum not implemented yet..";
-    my $checksum = $sc->calculate_checksum; 
-    is($checksum,'some_checksum','base checksum');
-}
+my $checksum = $sc->checksum;
+is( $checksum, '89049e457886a86886a4fdf1f905b69250a8236c', 'base checksum' );
