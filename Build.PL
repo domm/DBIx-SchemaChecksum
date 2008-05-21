@@ -13,9 +13,9 @@ my $builder = Module::Build->new(
         'DBD::SQLite'      => '1.14',
     },
     requires => {
-        'DBI'          => '1.601',
-        'Digest::SHA1' => '2.11',
-        'Moose'        => '0.40',
+        'DBI'            => '1.601',
+        'Digest::SHA1'   => '2.11',
+        'Moose'          => '0.40',
         'MooseX::Getopt' => '0.12',
     },
     add_to_cleanup     => ['DBIx-SchemaChecksum-*'],
