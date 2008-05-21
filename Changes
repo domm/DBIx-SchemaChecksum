@@ -1,5 +1,7 @@
 Revision history for DBIx-SchemaChecksum
 
+0.02-tobe
+
 0.01    2008-05-20 16:10:17
     - basic checksum calculation works
     - started development
