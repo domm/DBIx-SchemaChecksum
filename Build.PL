@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Module::Build;
+use 5.008;
 
 my $builder = Module::Build->new(
     module_name       => 'DBIx::SchemaChecksum',
@@ -13,6 +14,7 @@ my $builder = Module::Build->new(
         'DBD::SQLite'      => '1.14',
     },
     requires => {
+        'perl'           => '5.008',
         'DBI'            => '1.601',
         'Digest::SHA1'   => '2.11',
         'Moose'          => '0.40',
