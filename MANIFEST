@@ -3,6 +3,7 @@ bin/schema_update.pl
 Build.PL
 Changes
 lib/DBIx/SchemaChecksum.pm
+LICENSE
 Makefile.PL
 MANIFEST
 META.yml
@@ -13,12 +14,13 @@ t/base_checksum.t
 t/build_update_path.t
 t/dbs/base.db
 t/dbs/snippets/another_change.sql
+t/dbs/snippets/bad.t
 t/dbs/snippets/first_change.sql
 t/dbs/update.db
 t/dbs/update.tpl
+t/exceptions.t
 t/get_checksums_from_snippet.t
 t/schemadump.t
 xt/boilerplate.t
 xt/pod-coverage.t
 xt/pod.t
-

@@ -97,8 +97,9 @@ Moose Object Builder which sets up the DB connection.
 
 sub BUILD {
     my $self = shift;
-    my $dbh = DBI->connect( $self->dsn, $self->user, $self->password )
-      || die "Cannot connect to database: " . $DBI::errstr;
+    my $dbh =
+      DBI->connect( $self->dsn, $self->user, $self->password,
+        { RaiseError => 1 } );
     $self->_dbh($dbh);
 }
 
@@ -361,7 +362,10 @@ their C<preSHA1sum> and C<postSHA1sum>.
 
 sub build_update_path {
     my $self = shift;
-    my $dir = shift || $self->sqlsnippetdir;
+    my $dir  = shift || $self->sqlsnippetdir;
+    croak("Please specify sqlsnippetdir") unless $dir;
+    croak("Cannot find sqlsnippetdir: $dir") unless -d $dir;
+
     say "Checking directory $dir for checksum_files" if $self->verbose;
 
     my %update_info;
@@ -394,14 +398,17 @@ The file has to contain this info in SQL comments, eg:
 sub get_checksums_from_snippet {
     my $self     = shift;
     my $filename = shift;
+    croak "Need a filename" unless $filename;
+
     my %checksums;
 
     open( my $fh, "<", $filename ) || croak "Cannot read $filename: $!";
     while (<$fh>) {
-        m/^--\s+(pre|post)SHA1sum:?\s+([0-9A-Fa-f]{40,})\s+$/;
-        $checksums{$1} = $2 if defined($1);
+        if (m/^--\s+(pre|post)SHA1sum:?\s+([0-9A-Fa-f]{40,})\s+$/) {
+            $checksums{$1} = $2;
+        }
     }
-    close $fh || croak "Cannot close $filename: $!";
+    close $fh;
     return map { $checksums{$_} || '' } qw(pre post);
 }
 

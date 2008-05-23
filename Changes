@@ -1,6 +1,10 @@
 Revision history for DBIx-SchemaChecksum
 
-0.03-tobe
+0.03    2008-05-23 22:40:26
+    - Test Coverage: 81.7%
+    - added dependecy on IO::Prompt (which I forgot in 0.02, but 
+      thanks to CPAN testers I was notified of this problem)
+    - added test
     - added bin/schema_update.pl and supporting methods
     - require Perl 5.10
 
