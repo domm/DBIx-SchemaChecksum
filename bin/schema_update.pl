@@ -17,12 +17,13 @@ __END__
 
 =head1 NAME
 
-schema_checksum.pl - calculate and print a db checksum
+schema_update.pl - Update a schema based on checksums and sql snippets
+
 
 =head1 SYNOPSIS
 
-    schema_checksum.pl --dsn dbi:Pg:dbname=your_db;host=db.example.org
-  
+    schema_update.pl --dsn dbi:Pg:dbname=your_db;host=db.example.org  --sqlsnippetdir path/to/sql/snippets
+
 =head1 DESCRIPTION
 
 Please see C<perldoc DBIx::SchemaChecksum> for more information.
