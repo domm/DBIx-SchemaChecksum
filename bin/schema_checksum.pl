@@ -2,12 +2,13 @@
 
 use strict;
 use warnings;
+use 5.010;
 use DBIx::SchemaChecksum;
 
 my $sc = DBIx::SchemaChecksum->new_with_options();
 
-print $sc->schemadump ."\n" if $sc->verbose;
-print $sc->checksum,"\n";
+say $sc->schemadump  if $sc->verbose;
+say $sc->checksum;
 
 __END__
 
