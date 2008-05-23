@@ -1,6 +1,6 @@
 ---
 name: DBIx-SchemaChecksum
-version: 0.02
+version: 0.03
 author:
   - 'Thomas Klausner <domm@cpan.org>'
 abstract: Generate and compare checksums of database schematas
