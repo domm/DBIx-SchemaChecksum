@@ -21,4 +21,3 @@ t/schemadump.t
 xt/boilerplate.t
 xt/pod-coverage.t
 xt/pod.t
-
