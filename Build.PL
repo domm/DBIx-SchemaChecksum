@@ -19,6 +19,7 @@ my $builder = Module::Build->new(
         'Digest::SHA1'   => '2.11',
         'Moose'          => '0.40',
         'MooseX::Getopt' => '0.12',
+        'Path::Class'    => '0.16',
     },
     add_to_cleanup     => ['DBIx-SchemaChecksum-*'],
     create_makefile_pl => 'passthrough',

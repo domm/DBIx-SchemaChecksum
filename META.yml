@@ -12,6 +12,7 @@ requires:
   Digest::SHA1: 2.11
   Moose: 0.40
   MooseX::Getopt: 0.12
+  perl: 5.008
 build_requires:
   DBD::SQLite: 1.14
   Test::More: 0

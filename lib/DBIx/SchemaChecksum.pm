@@ -7,6 +7,9 @@ use version; our $VERSION = version->new('0.02');
 use DBI;
 use Digest::SHA1;
 use Data::Dumper;
+use Path::Class;
+use Carp;
+use IO::Prompt;
 
 with 'MooseX::Getopt';
 
@@ -19,10 +22,17 @@ has 'schemata' =>
   ( is => 'ro', isa => 'ArrayRef[Str]', default => sub { ['%'] } );
 has 'tabletype' => ( is => 'ro', isa => 'Str', default => 'table' );
 
-has 'verbose' => ( is => 'ro', isa => 'Bool', default => 0 );
+has 'sqlsnippetdir' => ( isa => 'Str', is => 'ro' );
 
+# mainly needed for scripts
+has 'verbose' => ( is => 'ro', isa => 'Bool', default => 0 );
+has 'no_prompt' => ( is => 'ro', isa => 'Bool', default => 0 );
+has 'dry_run' => ( is => 'ro', isa => 'Bool', default => 0 );
+
+# internal
 has '_dbh'        => ( isa => 'DBI::db', is  => 'rw' );
 has '_schemadump' => ( is  => 'rw',      isa => 'Str' );
+has '_update_path' => ( is  => 'rw',      isa => 'HashRef' );
 
 =head1 NAME
 
@@ -243,15 +253,92 @@ sub _sqlite_column_info {
     return $sth;
 }
 
-=head3 apply_sql_updates
+=head3 apply_sql_snippets
 
-    $self->apply_sql_updates( $starting_checksum );
+    $self->apply_sql_snippets( $starting_checksum );
 
 Applies SQL snippets in the correct order to the DB. Checks if the 
 checksum after applying the snippets is correct. If it isn't correct 
 rolls back the last change (if your DB supports transactions...)
 
 =cut
+
+sub apply_sql_snippets {
+    my $self = shift;
+    my $this_checksum = shift;
+	croak "No current checksum" unless $this_checksum;
+
+    my $update_path = $self->_update_path;
+
+    my $update=$update_path->{$this_checksum} if (exists $update_path->{$this_checksum});
+
+    unless ($update) {
+        croak "No update found that's based on $this_checksum.\n";
+    }
+
+    my ($file, $expected_post_checksum) = @$update;
+
+    my $yes=0;
+    if ($self->no_prompt) {
+        $yes=1;
+    }
+    elsif (prompt( "Do you want me to apply <" . $file->basename . ">? [y/n] ", '-yn1' )) {
+        $yes=1;
+    }
+
+    if ($yes) {
+        say("Applying the patch") if $self->verbose;
+        my $content = $file->slurp;
+
+        my $dbh = $self->_dbh;
+        $dbh->begin_work;
+
+        $content =~ s/^\s*--.+$//gm;
+        foreach my $command ( split( /(?!:[\\]);/, $content ) ) {
+            $command =~ s/\A\s+//;
+            $command =~ s/\s+\Z//;
+
+            next unless $command;
+            if ($self->dry_run) {
+                say "dry run!" if $self->verbose;
+            }
+            else {
+                say "Executing: $command" if $self->verbose;
+                eval { $dbh->do($command) };
+                if ($@) {
+                    $dbh->rollback;
+                    say "SQL error: $@";
+                    croak "ABORTING!\n";
+                }
+            }
+        }
+   
+        if ($self->dry_run) {
+            $dbh->rollback;
+            say "dry run, so checksums cannot match. We proceed anyway...";
+            return $self->apply_sql_snippets($expected_post_checksum);
+        }
+
+        # new checksum
+        $self->_schemadump('');
+        my $post_checksum = $self->checksum;
+        if ($post_checksum eq $expected_post_checksum) {
+            say "post checksum OK";
+            $dbh->commit;
+            return $self->apply_sql_snippets($post_checksum);
+        }
+        else {
+            say "post checksum mismatch!";
+            say "  expected $expected_post_checksum";
+            say "  got      $post_checksum";
+            $dbh->rollback;
+            croak "ABORTING!\n";
+        }
+    }
+    else {
+        croak "I am not applying this file. So I stop.\n";
+    }
+}
 
 =head3 build_update_path
 
@@ -267,8 +354,54 @@ their C<preSHA1sum> and C<postSHA1sum>.
 =cut
 
 sub build_update_path {
+    my $self = shift;
+    my $dir = shift || $self->sqlsnippetdir;
+    say "Checking directory $dir for checksum_files" if $self->verbose;
+    
+    my %update_info;
+    my @files = glob( $dir . "/*.sql" );
+    
+    foreach my $file (@files) {
+        my ($pre,$post) = $self->get_checksums_from_snippet($file);
+        $update_info{$pre}=[ Path::Class::File->new($file) ,$post];
+    }
 
+    return $self->_update_path(\%update_info) if %update_info;
+	return;
 }
+
+=head3 get_checksums_from_snippet
+
+    my ($pre, $post) = $self->get_checksums_from_snippet( $file );
+
+Returns a list of the preSHA1sum and postSHA1sum for the given file.
+
+The file has to contain this info in SQL comments, eg:
+
+  -- preSHA1sum: 89049e457886a86886a4fdf1f905b69250a8236c
+  -- postSHA1sum: d9a02517255045167053ea92dace728e1389f8ca
+
+  alter table foo add column bar;
+
+=cut
+
+sub get_checksums_from_snippet {
+    my $self = shift;
+    my $filename = shift;
+    my %checksums;
+    
+    open (my $fh, "<", $filename) || croak "Cannot read $filename: $!";
+    while (<$fh>) {
+        m/^--\s+(pre|post)SHA1sum:?\s+([0-9A-Fa-f]{40,})\s+$/;
+        $checksums{$1} = $2 if defined($1);
+    }
+    close $fh || croak "Cannot close $filename: $!";
+    return map { $checksums{$_} || '' } qw(pre post);
+}
+
+
+
+
 
 =head2 Attributes generated by Moose
 
