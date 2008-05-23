@@ -12,7 +12,8 @@ requires:
   Digest::SHA1: 2.11
   Moose: 0.40
   MooseX::Getopt: 0.12
-  perl: 5.008
+  Path::Class: 0.16
+  perl: 5.010
 build_requires:
   DBD::SQLite: 1.14
   Test::More: 0
@@ -20,7 +21,7 @@ build_requires:
 provides:
   DBIx::SchemaChecksum:
     file: lib/DBIx/SchemaChecksum.pm
-    version: 0.02
+    version: 0.03
 generated_by: Module::Build version 0.280801
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

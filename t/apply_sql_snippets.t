@@ -18,3 +18,4 @@ like($@,qr/^No update found/,'end of chain');
 my $post_checksum = $sc->checksum;
 is ($post_checksum,'7a1263a17bc9648e06de64fabb688633feb04f05','checksum after two changes ok');
 
+copy('t/dbs/update.tpl','t/dbs/update.db') || die "cannot create test db: $!";
