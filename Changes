@@ -1,6 +1,7 @@
 Revision history for DBIx-SchemaChecksum
 
 0.03-tobe
+    - added bin/schema_update.pl and supporting methods
     - require Perl 5.10
 
 
