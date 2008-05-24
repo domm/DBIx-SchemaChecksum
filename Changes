@@ -1,5 +1,11 @@
 Revision history for DBIx-SchemaChecksum
 
+0.05    
+    - Test Coverage: 82.4%
+    - make t/apply_sql_snippets.t skip instead of fail if we cannot
+      copy the testdb
+
+
 0.04    2008-05-23 22:40:26
     - Test Coverage: 81.7%
     - added dependecy on IO::Prompt (which I forgot in 0.02, but 
@@ -7,6 +13,7 @@ Revision history for DBIx-SchemaChecksum
     - added test
     - added bin/schema_update.pl and supporting methods
     - require Perl 5.10
+
 
 0.03    2008-05-23 ??:??:??
     - added bin/schema_update.pl and supporting methods
