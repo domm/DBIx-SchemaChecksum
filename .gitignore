@@ -9,3 +9,4 @@ pm_to_blib*
 .lwpcookies
 DBIx-SchemaChecksum-*
 cover_db
+MANIFEST.bak
