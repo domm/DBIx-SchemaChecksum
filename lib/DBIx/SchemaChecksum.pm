@@ -2,7 +2,7 @@ package DBIx::SchemaChecksum;
 
 use 5.010;
 use Moose;
-use version; our $VERSION = version->new('0.04');
+use version; our $VERSION = version->new('0.06');
 
 use DBI;
 use Digest::SHA1;
@@ -352,9 +352,8 @@ sub apply_sql_snippets {
     my $update_info = $self->build_update_path( '/path/to/sql/snippets' )
 
 Builds the datastructure needed by L<apply_sql_update>.
-
-C<build_update_path> reads in all files ending in ".sql" in the 
-directory passed in (or defaulting to C<< $self->sqlsnippetdir>>). It 
+C<build_update_path> reads in all files ending in ".sql" in the
+directory passed in (or defaulting to C<< $self->sqlsnippetdir >>). It 
 builds something like a linked list of files, which are chained by 
 their C<preSHA1sum> and C<postSHA1sum>.
 
@@ -502,8 +501,6 @@ L<http://search.cpan.org/dist/DBIx-SchemaChecksum>
 
 Thanks to Klaus Ita and Armin Schreger for writing the core code. I 
 just glued it together...
-
-=head1 ACKNOWLEDGEMENTS
 
 This module was written for revdev L<http://www.revdev.at>, a nice 
 litte software company run by Koki, Domm 
