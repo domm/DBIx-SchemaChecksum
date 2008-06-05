@@ -13,9 +13,10 @@ use IO::Prompt;
 
 with 'MooseX::Getopt';
 
-has 'dsn' => ( isa => 'Str', is => 'ro', required => 1 );
+has 'dsn'      => ( isa => 'Str', is => 'ro' );
 has 'user'     => ( isa => 'Str', is => 'ro' );
 has 'password' => ( isa => 'Str', is => 'ro' );
+has 'dbh'      => ( isa => 'DBI::db', is  => 'rw' );
 
 has 'catalog' => ( is => 'ro', isa => 'Str', default => '%' );
 has 'schemata' =>
@@ -30,7 +31,7 @@ has 'no_prompt' => ( is => 'ro', isa => 'Bool', default => 0 );
 has 'dry_run'   => ( is => 'ro', isa => 'Bool', default => 0 );
 
 # internal
-has '_dbh'         => ( isa => 'DBI::db', is  => 'rw' );
+
 has '_schemadump'  => ( is  => 'rw',      isa => 'Str' );
 has '_update_path' => ( is  => 'rw',      isa => 'HashRef' );
 
@@ -97,10 +98,17 @@ Moose Object Builder which sets up the DB connection.
 
 sub BUILD {
     my $self = shift;
-    my $dbh =
-      DBI->connect( $self->dsn, $self->user, $self->password,
-        { RaiseError => 1 } );
-    $self->_dbh($dbh);
+    
+    confess "Attribute (dsn) or (dbh) is required"
+        unless $self->dsn || $self->dbh;
+    
+    unless (defined $self->dbh()) {
+        my $dbh =
+          DBI->connect( $self->dsn, $self->user, $self->password,
+            { RaiseError => 1 } );
+        $self->dbh($dbh);
+    }
+
 }
 
 =head3 checksum
@@ -135,7 +143,7 @@ sub schemadump {
     my $tabletype = $self->tabletype;
     my $catalog   = $self->catalog;
 
-    my $dbh = $self->_dbh;
+    my $dbh = $self->dbh;
 
     my %relevants = ();
     foreach my $schema ( @{ $self->schemata } ) {
@@ -297,7 +305,7 @@ sub apply_sql_snippets {
         say("Applying the patch") if $self->verbose;
         my $content = $file->slurp;
 
-        my $dbh = $self->_dbh;
+        my $dbh = $self->dbh;
         $dbh->begin_work;
 
         $content =~ s/^\s*--.+$//gm;
@@ -416,9 +424,13 @@ sub get_checksums_from_snippet {
 All of this methods can also be set from the commandline. See 
 MooseX::Getopts.
 
+=head3 dbh
+
+The database handle (DBH::db). 
+
 =head3 dsn
 
-The dsn. Required.
+The dsn.
 
 =head3 user
 
