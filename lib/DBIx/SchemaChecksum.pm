@@ -9,7 +9,6 @@ use Digest::SHA1;
 use Data::Dumper;
 use Path::Class;
 use Carp;
-use IO::Prompt;
 
 with 'MooseX::Getopt';
 
@@ -292,13 +291,21 @@ sub apply_sql_snippets {
     if ( $self->no_prompt ) {
         $yes = 1;
     }
-    elsif (
-        prompt(
-            "Do you want me to apply <" . $file->basename . ">? [y/n] ", '-yn1'
-        )
-      )
-    {
-        $yes = 1;
+    else {
+        my $ask_user=1;
+        while ($ask_user) {
+            print "Do you want me to apply <" . $file->basename . ">? [y/n] ";
+            my $in = <STDIN>;
+            chomp($in);
+            if ($in =~ /^y/i) {
+                $yes = 1;
+                $ask_user=0;
+            }
+            elsif ($in =~ /^n/i) {
+                $yes = 0;
+                $ask_user=0;
+            }
+        }
     }
 
     if ($yes) {

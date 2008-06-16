@@ -17,7 +17,6 @@ my $builder = Module::Build->new(
         'perl'           => '5.010',
         'DBI'            => '1.601',
         'Digest::SHA1'   => '2.11',
-        'IO::Prompt'     => '0',
         'Moose'          => '0.40',
         'MooseX::Getopt' => '0.12',
         'Path::Class'    => '0.16',
