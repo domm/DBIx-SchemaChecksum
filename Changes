@@ -1,6 +1,10 @@
 Revision history for DBIx-SchemaChecksum
 
-0.06-tobe
+0.06   2008-06-16 10:46:19
+    - Test Coverage: 78.8%
+    - removed IO::Prompt
+    - Alternative construction via dbh (either dsn or dbh) (maros)
+    - fixed some problems with tests on various platforms
 
 
 0.05   2008-05-24 10:17:02

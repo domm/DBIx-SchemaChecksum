@@ -11,6 +11,7 @@ my $builder = Module::Build->new(
     build_requires    => {
         'Test::More'       => 0,
         'Test::NoWarnings' => '0.084',
+        'Test::Deep'       => '0.099',
         'DBD::SQLite'      => '1.14',
     },
     requires => {
