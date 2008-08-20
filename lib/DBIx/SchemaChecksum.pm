@@ -183,6 +183,10 @@ sub schemadump {
                 );
             }
 
+			foreach my $col ( @{ $data{columns} } ) {
+				$col->{TYPE_NAME} =~ s/^(?:.+\.)?(.+)$/$1/g;
+			}
+
             $relevants{$table} = \%data;
         }
 
