@@ -2,7 +2,7 @@ package DBIx::SchemaChecksum;
 
 use 5.010;
 use Moose;
-use version; our $VERSION = version->new('0.10');
+use version; our $VERSION = version->new('0.20');
 
 use DBI;
 use Digest::SHA1;

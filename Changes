@@ -1,5 +1,16 @@
 Revision history for DBIx-SchemaChecksum
 
+0.20   2008-09-11 20:49:26
+    !!! BIG FAT WARNING !!!
+    Checksums calculated with version prior to 0.20 won't work with 
+    checksums calculated after 0.20
+    --- BIG FAT WARNING ---
+
+    - changed schemadump to list columns sorted by name so that funky 
+      postgres inheritance followed by changes to the table other 
+      tables inherit from don't f*ck up the checksum.
+
+
 0.10   2008-09-11 15:45:01
     - add command line option to ignore ORDINAL_POSITION of columns 
       
