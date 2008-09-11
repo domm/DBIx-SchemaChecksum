@@ -2,7 +2,7 @@ package DBIx::SchemaChecksum;
 
 use 5.010;
 use Moose;
-use version; our $VERSION = version->new('0.09');
+use version; our $VERSION = version->new('0.10');
 
 use DBI;
 use Digest::SHA1;
@@ -32,6 +32,7 @@ has 'sqlsnippetdir' => ( isa => 'Str', is => 'ro' );
 has 'verbose'   => ( is => 'ro', isa => 'Bool', default => 0 );
 has 'no_prompt' => ( is => 'ro', isa => 'Bool', default => 0 );
 has 'dry_run'   => ( is => 'ro', isa => 'Bool', default => 0 );
+has 'ignore_order'  => ( is => 'ro', isa => 'Bool', default => 0 );
 
 # internal
 
@@ -149,6 +150,10 @@ sub schemadump {
 
     my $dbh = $self->dbh;
 
+    my @metadata=qw(COLUMN_NAME COLUMN_SIZE NULLABLE);
+    push(@metadata,'ORDINAL_POSITION') unless $self->ignore_order;
+    push(@metadata,qw(TYPE_NAME COLUMN_DEF));
+
     my %relevants = ();
     foreach my $schema ( @{ $self->schemata } ) {
         foreach my $table ( $dbh->tables( $catalog, $schema, '%', $tabletype ) )
@@ -165,10 +170,7 @@ sub schemadump {
             # columns
             my $sth_col = $dbh->column_info( $catalog, $schema, $t, '%' );
             $data{columns} = $sth_col->fetchall_arrayref(
-                {
-                    map { $_ => 1 }
-                      qw(COLUMN_NAME COLUMN_SIZE NULLABLE ORDINAL_POSITION TYPE_NAME COLUMN_DEF)
-                }
+                { map { $_ => 1 } @metadata }
             );
 
             # foreign keys
