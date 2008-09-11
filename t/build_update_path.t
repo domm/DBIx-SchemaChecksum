@@ -13,25 +13,25 @@ my $sc =
 my $update = $sc->build_update_path('t/dbs/snippets');
 is( int keys %$update, 2, '2 updates' );
 is(
-    $update->{'89049e457886a86886a4fdf1f905b69250a8236c'}->[1],
-    'd9a02517255045167053ea92dace728e1389f8ca',
+    $update->{'5f22e538285f79ec558e16dbfeb0b34a36e4da19'}->[1],
+    '6620c14bb4aaafdcf142022b5cef7f74ee7c7383',
     'first sum link'
 );
 is(
-    $update->{'d9a02517255045167053ea92dace728e1389f8ca'}->[1],
-    '7a1263a17bc9648e06de64fabb688633feb04f05',
+    $update->{'6620c14bb4aaafdcf142022b5cef7f74ee7c7383'}->[1],
+    '39219d6fd802540c79b0a93d7111ea45f66e9518',
     'second sum link'
 );
 is( $update->{'7a1263a17bc9648e06de64fabb688633feb04f05'},
     undef, 'end of chain' );
 
 cmp_deeply(
-    [File::Spec->splitdir($update->{'89049e457886a86886a4fdf1f905b69250a8236c'}->[0])],
+    [File::Spec->splitdir($update->{'5f22e538285f79ec558e16dbfeb0b34a36e4da19'}->[0])],
     [qw(t dbs snippets first_change.sql)],
     'first snippet'
 );
 cmp_deeply(
-    [File::Spec->splitdir($update->{'d9a02517255045167053ea92dace728e1389f8ca'}->[0])],
+    [File::Spec->splitdir($update->{'6620c14bb4aaafdcf142022b5cef7f74ee7c7383'}->[0])],
     [qw(t dbs snippets another_change.sql)],
     'second snippet'
 );

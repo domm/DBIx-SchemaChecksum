@@ -16,28 +16,28 @@ has 'dsn'      => ( isa => 'Str', is => 'ro' );
 has 'user'     => ( isa => 'Str', is => 'ro' );
 has 'password' => ( isa => 'Str', is => 'ro' );
 
-# for strange reasons, MooseX::Getop does not work with DBI::db 
+# for strange reasons, MooseX::Getop does not work with DBI::db
 # constraint
 #has 'dbh'      => ( isa => 'DBI::db', is  => 'rw' );
-has 'dbh'      => (  is  => 'rw' );
+has 'dbh' => ( is => 'rw' );
 
 has 'catalog' => ( is => 'ro', isa => 'Str', default => '%' );
 has 'schemata' =>
-  ( is => 'ro', isa => 'ArrayRef[Str]', default => sub { ['%'] } );
+    ( is => 'ro', isa => 'ArrayRef[Str]', default => sub { ['%'] } );
 has 'tabletype' => ( is => 'ro', isa => 'Str', default => 'table' );
 
 has 'sqlsnippetdir' => ( isa => 'Str', is => 'ro' );
 
 # mainly needed for scripts
-has 'verbose'   => ( is => 'ro', isa => 'Bool', default => 0 );
-has 'no_prompt' => ( is => 'ro', isa => 'Bool', default => 0 );
-has 'dry_run'   => ( is => 'ro', isa => 'Bool', default => 0 );
-has 'ignore_order'  => ( is => 'ro', isa => 'Bool', default => 0 );
+has 'verbose'      => ( is => 'ro', isa => 'Bool', default => 0 );
+has 'no_prompt'    => ( is => 'ro', isa => 'Bool', default => 0 );
+has 'dry_run'      => ( is => 'ro', isa => 'Bool', default => 0 );
+has 'ignore_order' => ( is => 'ro', isa => 'Bool', default => 0 );
 
 # internal
 
-has '_schemadump'  => ( is  => 'rw',      isa => 'Str' );
-has '_update_path' => ( is  => 'rw',      isa => 'HashRef' );
+has '_schemadump'  => ( is => 'rw', isa => 'Str' );
+has '_update_path' => ( is => 'rw', isa => 'HashRef' );
 
 =head1 NAME
 
@@ -102,13 +102,12 @@ Moose Object Builder which sets up the DB connection.
 
 sub BUILD {
     my $self = shift;
-   
+
     confess "Attribute (dsn) or (dbh) is required"
         unless $self->dsn || $self->dbh;
-    
-    unless (defined $self->dbh()) {
-        my $dbh =
-          DBI->connect( $self->dsn, $self->user, $self->password,
+
+    unless ( defined $self->dbh() ) {
+        my $dbh = DBI->connect( $self->dsn, $self->user, $self->password,
             { RaiseError => 1 } );
 
         $self->dbh($dbh);
@@ -150,13 +149,14 @@ sub schemadump {
 
     my $dbh = $self->dbh;
 
-    my @metadata=qw(COLUMN_NAME COLUMN_SIZE NULLABLE);
-    push(@metadata,'ORDINAL_POSITION') unless $self->ignore_order;
-    push(@metadata,qw(TYPE_NAME COLUMN_DEF));
+    my @metadata = qw(COLUMN_NAME COLUMN_SIZE NULLABLE);
+    push( @metadata, 'ORDINAL_POSITION' ) unless $self->ignore_order;
+    push( @metadata, qw(TYPE_NAME COLUMN_DEF) );
 
     my %relevants = ();
     foreach my $schema ( @{ $self->schemata } ) {
-        foreach my $table ( $dbh->tables( $catalog, $schema, '%', $tabletype ) )
+        foreach
+            my $table ( $dbh->tables( $catalog, $schema, '%', $tabletype ) )
         {
             my %data = ( table => $table );
 
@@ -169,34 +169,35 @@ sub schemadump {
 
             # columns
             my $sth_col = $dbh->column_info( $catalog, $schema, $t, '%' );
-            $data{columns} = $sth_col->fetchall_arrayref(
-                { map { $_ => 1 } @metadata }
-            );
+            my $column_info = $sth_col->fetchall_arrayref(
+                { map { $_ => 1 } @metadata } );
+
+            $data{columns}
+                = { map { $_->{COLUMN_NAME} => $_ } @$column_info };
 
             # foreign keys
-            my $sth_fk =
-              $dbh->foreign_key_info( '', '', '', $catalog, $schema, $t );
+            my $sth_fk
+                = $dbh->foreign_key_info( '', '', '', $catalog, $schema, $t );
             if ($sth_fk) {
-                $data{foreign_keys} = $sth_fk->fetchall_arrayref(
-                    {
+                $data{foreign_keys} = $sth_fk->fetchall_arrayref( {
                         map { $_ => 1 }
-                          qw(FK_NAME UK_NAME UK_COLUMN_NAME FK_TABLE_NAME FK_COLUMN_NAME UPDATE_RULE DELETE_RULE DEFERRABILITY)
+                            qw(FK_NAME UK_NAME UK_COLUMN_NAME FK_TABLE_NAME FK_COLUMN_NAME UPDATE_RULE DELETE_RULE DEFERRABILITY)
                     }
                 );
             }
-
-			foreach my $col ( @{ $data{columns} } ) {
+           
+            foreach my $col ( values %{ $data{columns} } ) {
                 #  strip schema dependent type definition
                 $col->{TYPE_NAME} =~ s/^(?:.+\.)?(.+)$/$1/g;
 
                 # remove types from autoincrement
-                if ($col->{COLUMN_DEF} && $col->{COLUMN_DEF} =~ /nextval/ ) {
-                    $col->{COLUMN_DEF}=~m{'([\w\.\-_]+)'};
+                if ( $col->{COLUMN_DEF} && $col->{COLUMN_DEF} =~ /nextval/ ) {
+                    $col->{COLUMN_DEF} =~ m{'([\w\.\-_]+)'};
                     if ($1) {
-                        $col->{COLUMN_DEF}='nextval:'.$1;
+                        $col->{COLUMN_DEF} = 'nextval:' . $1;
                     }
                 }
-			}
+            }
 
             $relevants{$table} = \%data;
         }
@@ -204,7 +205,6 @@ sub schemadump {
     }
     my $dumper = Data::Dumper->new( [ \%relevants ] );
     $dumper->Sortkeys(1);
-
     return $self->_schemadump( scalar $dumper->Dump );
 }
 
@@ -219,16 +219,16 @@ sub _sqlite_column_info {
 
     $table =~ s/["']//g;
     $column = undef
-      if defined $column && $column eq '%';
+        if defined $column && $column eq '%';
 
     my $sth_columns = $dbh->prepare(qq{PRAGMA table_info('$table')});
     $sth_columns->execute;
 
     my @names = qw( TABLE_CAT TABLE_SCHEM TABLE_NAME COLUMN_NAME
-      DATA_TYPE TYPE_NAME COLUMN_SIZE BUFFER_LENGTH
-      DECIMAL_DIGITS NUM_PREC_RADIX NULLABLE
-      REMARKS COLUMN_DEF SQL_DATA_TYPE SQL_DATETIME_SUB
-      CHAR_OCTET_LENGTH ORDINAL_POSITION IS_NULLABLE
+        DATA_TYPE TYPE_NAME COLUMN_SIZE BUFFER_LENGTH
+        DECIMAL_DIGITS NUM_PREC_RADIX NULLABLE
+        REMARKS COLUMN_DEF SQL_DATA_TYPE SQL_DATETIME_SUB
+        CHAR_OCTET_LENGTH ORDINAL_POSITION IS_NULLABLE
     );
 
     my @cols;
@@ -249,7 +249,7 @@ sub _sqlite_column_info {
         $col{TYPE_NAME} = $type;
 
         $col{COLUMN_DEF} = $col_info->{dflt_value}
-          if defined $col_info->{dflt_value};
+            if defined $col_info->{dflt_value};
 
         if ( $col_info->{notnull} ) {
             $col{NULLABLE}    = 0;
@@ -262,18 +262,18 @@ sub _sqlite_column_info {
 
         for my $key (@names) {
             $col{$key} = undef
-              unless exists $col{$key};
+                unless exists $col{$key};
         }
 
         push @cols, \%col;
     }
 
     my $sponge = DBI->connect( "DBI:Sponge:", '', '' )
-      or return $dbh->DBI::set_err( $DBI::err, "DBI::Sponge: $DBI::errstr" );
+        or
+        return $dbh->DBI::set_err( $DBI::err, "DBI::Sponge: $DBI::errstr" );
     my $sth = $sponge->prepare(
         "column_info $table",
-        {
-            rows          => [ map { [ @{$_}{@names} ] } @cols ],
+        {   rows          => [ map { [ @{$_}{@names} ] } @cols ],
             NUM_OF_FIELDS => scalar @names,
             NAME          => \@names,
         }
@@ -299,7 +299,7 @@ sub apply_sql_snippets {
     my $update_path = $self->_update_path;
 
     my $update = $update_path->{$this_checksum}
-      if ( exists $update_path->{$this_checksum} );
+        if ( exists $update_path->{$this_checksum} );
 
     unless ($update) {
         croak "No update found that's based on $this_checksum.\n";
@@ -312,18 +312,18 @@ sub apply_sql_snippets {
         $yes = 1;
     }
     else {
-        my $ask_user=1;
+        my $ask_user = 1;
         while ($ask_user) {
             print "Do you want me to apply <" . $file->basename . ">? [y/n] ";
             my $in = <STDIN>;
             chomp($in);
-            if ($in =~ /^y/i) {
-                $yes = 1;
-                $ask_user=0;
+            if ( $in =~ /^y/i ) {
+                $yes      = 1;
+                $ask_user = 0;
             }
-            elsif ($in =~ /^n/i) {
-                $yes = 0;
-                $ask_user=0;
+            elsif ( $in =~ /^n/i ) {
+                $yes      = 0;
+                $ask_user = 0;
             }
         }
     }
@@ -396,7 +396,7 @@ their C<preSHA1sum> and C<postSHA1sum>.
 
 sub build_update_path {
     my $self = shift;
-    my $dir  = shift || $self->sqlsnippetdir;
+    my $dir = shift || $self->sqlsnippetdir;
     croak("Please specify sqlsnippetdir") unless $dir;
     croak("Cannot find sqlsnippetdir: $dir") unless -d $dir;
 

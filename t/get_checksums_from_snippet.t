@@ -9,5 +9,5 @@ my $sc = DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/update.db" )
 
 
 my ($pre,$post) = $sc->get_checksums_from_snippet( 't/dbs/snippets/first_change.sql');
-is($pre,'89049e457886a86886a4fdf1f905b69250a8236c','preSHA1sum');
-is($post,'d9a02517255045167053ea92dace728e1389f8ca','postSHA1sum');
+is($pre,'5f22e538285f79ec558e16dbfeb0b34a36e4da19','preSHA1sum');
+is($post,'6620c14bb4aaafdcf142022b5cef7f74ee7c7383','postSHA1sum');
