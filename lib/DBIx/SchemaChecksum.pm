@@ -184,7 +184,16 @@ sub schemadump {
             }
 
 			foreach my $col ( @{ $data{columns} } ) {
-				$col->{TYPE_NAME} =~ s/^(?:.+\.)?(.+)$/$1/g;
+                #  strip schema dependent type definition
+                $col->{TYPE_NAME} =~ s/^(?:.+\.)?(.+)$/$1/g;
+
+                # remove types from autoincrement
+                if ($col->{COLUMN_DEF} && $col->{COLUMN_DEF} =~ /nextval/ ) {
+                    $col->{COLUMN_DEF}=~m{'([\w\.\-_]+)'};
+                    if ($1) {
+                        $col->{COLUMN_DEF}='nextval:'.$1;
+                    }
+                }
 			}
 
             $relevants{$table} = \%data;
