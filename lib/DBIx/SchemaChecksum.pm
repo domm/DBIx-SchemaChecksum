@@ -2,7 +2,7 @@ package DBIx::SchemaChecksum;
 
 use 5.010;
 use Moose;
-use version; our $VERSION = version->new('0.20');
+use version; our $VERSION = version->new('0.21');
 
 use DBI;
 use Digest::SHA1;
@@ -305,7 +305,17 @@ sub apply_sql_snippets {
         croak "No update found that's based on $this_checksum.\n";
     }
 
-    my ( $file, $expected_post_checksum ) = @$update;
+    if ($update->[0] eq 'SAME_CHECKSUM') {
+        my ($file, $expected_post_checksum)=splice(@$update,1,2);
+        $self->apply_file($file, $expected_post_checksum);
+    }
+    else {
+        $self->apply_file(@$update);
+    }
+}
+
+sub apply_file {
+    my ($self, $file, $expected_post_checksum ) = @_;
 
     my $yes = 0;
     if ( $self->no_prompt ) {
@@ -405,9 +415,29 @@ sub build_update_path {
     my %update_info;
     my @files = glob( $dir . "/*.sql" );
 
-    foreach my $file (@files) {
+    foreach my $file (sort @files) {
         my ( $pre, $post ) = $self->get_checksums_from_snippet($file);
-        $update_info{$pre} = [ Path::Class::File->new($file), $post ];
+        
+        if ($pre eq $post) {
+            if ($update_info{$pre}) {
+                unshift(@{$update_info{$pre}},'SAME_CHECKSUM');
+            }
+            else {
+                $update_info{$pre} = [ 'SAME_CHECKSUM' ];
+            }
+        }
+    
+        if ($update_info{$pre} && $update_info{$pre}->[0]  eq 'SAME_CHECKSUM') {
+            if ($post eq $pre) {
+                splice(@{$update_info{$pre}},1,0,Path::Class::File->new($file), $post);
+            }
+            else {
+                push(@{$update_info{$pre}},[ Path::Class::File->new($file), $post ]);
+            }
+        }
+        else {
+            $update_info{$pre} = [ Path::Class::File->new($file), $post ];
+        }
     }
 
     return $self->_update_path( \%update_info ) if %update_info;
