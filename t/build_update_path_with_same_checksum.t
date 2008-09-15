@@ -11,8 +11,6 @@ my $sc =
   DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/update.db" );
 
 my $update = $sc->build_update_path('t/dbs/snippets2');
-use Data::Dumper;
-diag(Dumper $update);
 is( int keys %$update, 3, '3 updates' );
 is(
     $update->{'5f22e538285f79ec558e16dbfeb0b34a36e4da19'}->[1],
