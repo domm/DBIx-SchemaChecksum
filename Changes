@@ -1,5 +1,9 @@
 Revision history for DBIx-SchemaChecksum
 
+0.21   2008-09-15 19:54:21
+    - handle update scripts that result in the same checksum
+
+
 0.20   2008-09-11 20:49:26
     !!! BIG FAT WARNING !!!
     Checksums calculated with version prior to 0.20 won't work with 
