@@ -295,7 +295,7 @@ sub apply_sql_snippets {
     my $self          = shift;
     my $this_checksum = shift;
     croak "No current checksum" unless $this_checksum;
-
+    
     my $update_path = $self->_update_path;
 
     my $update = $update_path->{$this_checksum}
@@ -304,9 +304,11 @@ sub apply_sql_snippets {
     unless ($update) {
         croak "No update found that's based on $this_checksum.\n";
     }
-
+    
     if ($update->[0] eq 'SAME_CHECKSUM') {
+        return unless $update->[1];
         my ($file, $expected_post_checksum)=splice(@$update,1,2);
+        
         $self->apply_file($file, $expected_post_checksum);
     }
     else {
