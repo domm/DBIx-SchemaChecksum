@@ -39,7 +39,7 @@ cmp_deeply(
 # corner cases
 my $sc2 = DBIx::SchemaChecksum->new(
     dsn          => "dbi:SQLite:dbname=t/dbs/update.db",
-    sqlsnippetdir => 't'
+    sqlsnippetdir => 't/dbs/no_snippets'
 );
 my $update2 = $sc2->build_update_path();
 is( $update2, undef, 'no snippets found' );

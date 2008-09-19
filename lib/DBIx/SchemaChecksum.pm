@@ -9,6 +9,7 @@ use Digest::SHA1;
 use Data::Dumper;
 use Path::Class;
 use Carp;
+use File::Find::Rule;
 
 with 'MooseX::Getopt';
 
@@ -415,7 +416,7 @@ sub build_update_path {
     say "Checking directory $dir for checksum_files" if $self->verbose;
 
     my %update_info;
-    my @files = glob( $dir . "/*.sql" );
+    my @files = File::Find::Rule->file->name('*.sql')->in( $dir );
 
     foreach my $file (sort @files) {
         my ( $pre, $post ) = $self->get_checksums_from_snippet($file);
