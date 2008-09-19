@@ -1,6 +1,7 @@
 Revision history for DBIx-SchemaChecksum
 
-0.21   2008-09-15 19:54:21
+0.21  2008-09-19 16:34:04
+    - find sql snippets in all dirs below the given dir
     - handle update scripts that result in the same checksum
 
 
