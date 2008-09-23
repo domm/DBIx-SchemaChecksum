@@ -1,7 +1,8 @@
 Revision history for DBIx-SchemaChecksum
 
 0.22   2008-09-23 13:37:16
-    - fixed another bug with same-checksum updates
+    - ignore files without a checksum
+    - fixed more bugs with same-checksum updates
 
 
 0.21  2008-09-19 16:34:04
