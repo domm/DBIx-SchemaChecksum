@@ -421,9 +421,18 @@ sub build_update_path {
     foreach my $file (sort @files) {
         my ( $pre, $post ) = $self->get_checksums_from_snippet($file);
         
+        if (!$pre && !$post) {
+            say "skipping $file (has no checksums)" if $self->verbose;
+            next;
+        }
+
         if ($pre eq $post) {
             if ($update_info{$pre}) {
-                unshift(@{$update_info{$pre}},'SAME_CHECKSUM');
+                my @new=('SAME_CHECKSUM');
+                foreach my $item (@{$update_info{$pre}}) {
+                    push(@new, $item) unless $item eq 'SAME_CHECKSUM';
+                }
+                $update_info{$pre}=\@new;
             }
             else {
                 $update_info{$pre} = [ 'SAME_CHECKSUM' ];
