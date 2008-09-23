@@ -435,7 +435,7 @@ sub build_update_path {
                 splice(@{$update_info{$pre}},1,0,Path::Class::File->new($file), $post);
             }
             else {
-                push(@{$update_info{$pre}},[ Path::Class::File->new($file), $post ]);
+                push(@{$update_info{$pre}}, Path::Class::File->new($file), $post);
             }
         }
         else {
