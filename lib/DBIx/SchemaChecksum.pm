@@ -192,7 +192,14 @@ sub schemadump {
                     }
                 );
             }
-           
+          
+            # postgres unique constraints
+            # very crude hack to see if we're running postgres
+            if ($INC{'DBD/Pg.pm'}) {
+                $data{unique_keys} = $dbh->selectall_arrayref("select indexdef from pg_indexes where schemaname=? and tablename=?",undef,$schema,$t);
+            }
+
+            # postgres cleanup
             foreach my $col ( values %{ $data{columns} } ) {
                 #  strip schema dependent type definition
                 $col->{TYPE_NAME} =~ s/^(?:.+\.)?(.+)$/$1/g;
