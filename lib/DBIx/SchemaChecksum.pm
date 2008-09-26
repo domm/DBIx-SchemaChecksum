@@ -169,16 +169,16 @@ sub schemadump {
 
             # columns
             my $sth_col = $dbh->column_info( $catalog, $schema, $t, '%' );
-            
+
             my $column_info = $sth_col->fetchall_hashref('COLUMN_NAME');
-            
-            while (my ($column,$data)=each %$column_info) {
-                $data{columns}{$column} = { 
-                    map { $_ => $data->{$_}} @metadata
-                };
+
+            while ( my ( $column, $data ) = each %$column_info ) {
+                $data{columns}{$column}
+                    = { map { $_ => $data->{$_} } @metadata };
                 # add postgres enums
-                if ($data->{pg_enum_values}) {
-                    $data{columns}{$column}{pg_enum_values}=$data->{pg_enum_values};
+                if ( $data->{pg_enum_values} ) {
+                    $data{columns}{$column}{pg_enum_values}
+                        = $data->{pg_enum_values};
                 }
             }
 
@@ -192,11 +192,14 @@ sub schemadump {
                     }
                 );
             }
-          
+
             # postgres unique constraints
             # very crude hack to see if we're running postgres
-            if ($INC{'DBD/Pg.pm'}) {
-                $data{unique_keys} = $dbh->selectall_arrayref("select indexdef from pg_indexes where schemaname=? and tablename=?",undef,$schema,$t);
+            if ( $INC{'DBD/Pg.pm'} ) {
+                $data{unique_keys} = $dbh->selectall_arrayref(
+                    "select indexdef from pg_indexes where schemaname=? and tablename=?",
+                    undef, $schema, $t
+                );
             }
 
             # postgres cleanup
@@ -309,7 +312,7 @@ sub apply_sql_snippets {
     my $self          = shift;
     my $this_checksum = shift;
     croak "No current checksum" unless $this_checksum;
-    
+
     my $update_path = $self->_update_path;
 
     my $update = $update_path->{$this_checksum}
@@ -318,12 +321,12 @@ sub apply_sql_snippets {
     unless ($update) {
         croak "No update found that's based on $this_checksum.\n";
     }
-    
-    if ($update->[0] eq 'SAME_CHECKSUM') {
+
+    if ( $update->[0] eq 'SAME_CHECKSUM' ) {
         return unless $update->[1];
-        my ($file, $expected_post_checksum)=splice(@$update,1,2);
-        
-        $self->apply_file($file, $expected_post_checksum);
+        my ( $file, $expected_post_checksum ) = splice( @$update, 1, 2 );
+
+        $self->apply_file( $file, $expected_post_checksum );
     }
     else {
         $self->apply_file(@$update);
@@ -331,7 +334,7 @@ sub apply_sql_snippets {
 }
 
 sub apply_file {
-    my ($self, $file, $expected_post_checksum ) = @_;
+    my ( $self, $file, $expected_post_checksum ) = @_;
 
     my $yes = 0;
     if ( $self->no_prompt ) {
@@ -429,35 +432,39 @@ sub build_update_path {
     say "Checking directory $dir for checksum_files" if $self->verbose;
 
     my %update_info;
-    my @files = File::Find::Rule->file->name('*.sql')->in( $dir );
+    my @files = File::Find::Rule->file->name('*.sql')->in($dir);
 
-    foreach my $file (sort @files) {
+    foreach my $file ( sort @files ) {
         my ( $pre, $post ) = $self->get_checksums_from_snippet($file);
-        
-        if (!$pre && !$post) {
+
+        if ( !$pre && !$post ) {
             say "skipping $file (has no checksums)" if $self->verbose;
             next;
         }
 
-        if ($pre eq $post) {
-            if ($update_info{$pre}) {
-                my @new=('SAME_CHECKSUM');
-                foreach my $item (@{$update_info{$pre}}) {
-                    push(@new, $item) unless $item eq 'SAME_CHECKSUM';
+        if ( $pre eq $post ) {
+            if ( $update_info{$pre} ) {
+                my @new = ('SAME_CHECKSUM');
+                foreach my $item ( @{ $update_info{$pre} } ) {
+                    push( @new, $item ) unless $item eq 'SAME_CHECKSUM';
                 }
-                $update_info{$pre}=\@new;
+                $update_info{$pre} = \@new;
             }
             else {
-                $update_info{$pre} = [ 'SAME_CHECKSUM' ];
+                $update_info{$pre} = ['SAME_CHECKSUM'];
             }
         }
-    
-        if ($update_info{$pre} && $update_info{$pre}->[0]  eq 'SAME_CHECKSUM') {
-            if ($post eq $pre) {
-                splice(@{$update_info{$pre}},1,0,Path::Class::File->new($file), $post);
+
+        if (   $update_info{$pre}
+            && $update_info{$pre}->[0] eq 'SAME_CHECKSUM' )
+        {
+            if ( $post eq $pre ) {
+                splice( @{ $update_info{$pre} },
+                    1, 0, Path::Class::File->new($file), $post );
             }
             else {
-                push(@{$update_info{$pre}}, Path::Class::File->new($file), $post);
+                push( @{ $update_info{$pre} },
+                    Path::Class::File->new($file), $post );
             }
         }
         else {
