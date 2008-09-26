@@ -150,9 +150,8 @@ sub schemadump {
 
     my $dbh = $self->dbh;
 
-    my @metadata = qw(COLUMN_NAME COLUMN_SIZE NULLABLE);
+    my @metadata = qw(COLUMN_NAME COLUMN_SIZE NULLABLE TYPE_NAME COLUMN_DEF);
     push( @metadata, 'ORDINAL_POSITION' ) unless $self->ignore_order;
-    push( @metadata, qw(TYPE_NAME COLUMN_DEF) );
 
     my %relevants = ();
     foreach my $schema ( @{ $self->schemata } ) {
@@ -170,11 +169,18 @@ sub schemadump {
 
             # columns
             my $sth_col = $dbh->column_info( $catalog, $schema, $t, '%' );
-            my $column_info = $sth_col->fetchall_arrayref(
-                { map { $_ => 1 } @metadata } );
-
-            $data{columns}
-                = { map { $_->{COLUMN_NAME} => $_ } @$column_info };
+            
+            my $column_info = $sth_col->fetchall_hashref('COLUMN_NAME');
+            
+            while (my ($column,$data)=each %$column_info) {
+                $data{columns}{$column} = { 
+                    map { $_ => $data->{$_}} @metadata
+                };
+                # add postgres enums
+                if ($data->{pg_enum_values}) {
+                    $data{columns}{$column}{pg_enum_values}=$data->{pg_enum_values};
+                }
+            }
 
             # foreign keys
             my $sth_fk
