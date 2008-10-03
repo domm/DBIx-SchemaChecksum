@@ -323,7 +323,8 @@ sub apply_sql_snippets {
         if ( exists $update_path->{$this_checksum} );
 
     unless ($update) {
-        croak "No update found that's based on $this_checksum.\n";
+        print "No update found that's based on $this_checksum.\n";
+        exit;
     }
 
     if ( $update->[0] eq 'SAME_CHECKSUM' ) {
@@ -383,7 +384,8 @@ sub apply_file {
                 if ($@) {
                     $dbh->rollback;
                     say "SQL error: $@";
-                    croak "ABORTING!\n";
+                    say "ABORTING!";
+                    exit;
                 }
             }
         }
@@ -407,11 +409,13 @@ sub apply_file {
             say "  expected $expected_post_checksum";
             say "  got      $post_checksum";
             $dbh->rollback;
-            croak "ABORTING!\n";
+            say "ABORTING!";
+            exit;
         }
     }
     else {
-        croak "I am not applying this file. So I stop.\n";
+        say "I am not applying this file. So I stop.";
+        exit;
     }
 }
 
