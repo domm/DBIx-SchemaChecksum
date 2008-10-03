@@ -2,7 +2,7 @@ package DBIx::SchemaChecksum;
 
 use 5.010;
 use Moose;
-use version; our $VERSION = version->new('0.23');
+use version; our $VERSION = version->new('0.24');
 
 use DBI;
 use Digest::SHA1;
@@ -196,10 +196,14 @@ sub schemadump {
             # postgres unique constraints
             # very crude hack to see if we're running postgres
             if ( $INC{'DBD/Pg.pm'} ) {
-                $data{unique_keys} = $dbh->selectall_arrayref(
-                    "select indexdef from pg_indexes where schemaname=? and tablename=?",
-                    undef, $schema, $t
-                );
+                my @unique;
+                my $sth=$dbh->prepare( "select indexdef from pg_indexes where schemaname=? and tablename=?");
+                $sth->execute($schema, $t);
+                while (my ($index) =$sth->fetchrow_array) {
+                    $index=~s/$schema\.//g;
+                    push(@unique,$index);
+                }
+                $data{unique_keys} = \@unique if @unique;
             }
 
             # postgres cleanup

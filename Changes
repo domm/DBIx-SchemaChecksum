@@ -1,5 +1,10 @@
 Revision history for DBIx-SchemaChecksum
 
+0.24   2008-10-03 13:19:05
+    - fixed a bug in postgres unique key calculation that broke 
+      auto-updates
+
+
 0.23   2008-09-26 17:01:44
     !!! BIG FAT WARNING !!!
     Older checksums won't work, at least for postgres
