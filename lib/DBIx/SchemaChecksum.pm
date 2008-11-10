@@ -30,10 +30,11 @@ has 'tabletype' => ( is => 'ro', isa => 'Str', default => 'table' );
 has 'sqlsnippetdir' => ( isa => 'Str', is => 'ro' );
 
 # mainly needed for scripts
-has 'verbose'      => ( is => 'ro', isa => 'Bool', default => 0 );
-has 'no_prompt'    => ( is => 'ro', isa => 'Bool', default => 0 );
-has 'dry_run'      => ( is => 'ro', isa => 'Bool', default => 0 );
-has 'ignore_order' => ( is => 'ro', isa => 'Bool', default => 0 );
+has 'verbose'      => ( is => 'rw', isa => 'Bool', default => 0 );
+has 'no_prompt'    => ( is => 'rw', isa => 'Bool', default => 0 );
+has 'dry_run'      => ( is => 'rw', isa => 'Bool', default => 0 );
+has 'ignore_order' => ( is => 'rw', isa => 'Bool', default => 0 );
+has 'show_update_path'  => ( is => 'rw', isa => 'Bool', default => 0 );
 
 # internal
 
@@ -316,15 +317,13 @@ sub apply_sql_snippets {
     my $self          = shift;
     my $this_checksum = shift;
     croak "No current checksum" unless $this_checksum;
-
     my $update_path = $self->_update_path;
 
     my $update = $update_path->{$this_checksum}
         if ( exists $update_path->{$this_checksum} );
 
     unless ($update) {
-        print "No update found that's based on $this_checksum.\n";
-        exit;
+        die "No update found that's based on $this_checksum.\n";
     }
 
     if ( $update->[0] eq 'SAME_CHECKSUM' ) {
@@ -340,10 +339,16 @@ sub apply_sql_snippets {
 
 sub apply_file {
     my ( $self, $file, $expected_post_checksum ) = @_;
+    
+    if ($self->show_update_path) {
+        print $file->basename." (".$expected_post_checksum.")\n";
+        return $self->apply_sql_snippets($expected_post_checksum);
+    }
 
     my $yes = 0;
     if ( $self->no_prompt ) {
         $yes = 1;
+        print "Applying " .$file->basename. "\n";
     }
     else {
         my $ask_user = 1;
