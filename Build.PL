@@ -22,6 +22,7 @@ my $builder = Module::Build->new(
         'MooseX::Getopt'   => '0.12',
         'Path::Class'      => '0.16',
         'File::Find::Rule' => '0.30',
+        'IO::Capture'      => '0.05',
     },
     add_to_cleanup     => ['DBIx-SchemaChecksum-*'],
     create_makefile_pl => 'passthrough',

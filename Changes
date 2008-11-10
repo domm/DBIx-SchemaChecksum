@@ -1,5 +1,9 @@
 Revision history for DBIx-SchemaChecksum
 
+0.25   2008-11-10 19:01:37
+    - added option to show update path without applying anything
+
+
 0.24   2008-10-03 13:19:05
     - nicer output (say instead of croak)
     - fixed a bug in postgres unique key calculation that broke 
