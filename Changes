@@ -1,5 +1,10 @@
 Revision history for DBIx-SchemaChecksum
 
+0.26   2008-11-24 11:35:07
+    - sort unique keys because sometimes PG reports them in a 
+      different order
+
+
 0.25   2008-11-10 19:01:37
     - added option to show update path without applying anything
 
