@@ -204,6 +204,7 @@ sub schemadump {
                     $index=~s/$schema\.//g;
                     push(@unique,$index);
                 }
+                @unique = sort (@unique);
                 $data{unique_keys} = \@unique if @unique;
             }
 
