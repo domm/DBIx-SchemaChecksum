@@ -236,9 +236,9 @@ sub schemadump {
 
 # sqlite column_info monkeypatch
 # see http://rt.cpan.org/Public/Bug/Display.html?id=13631
-BEGIN {
-    *DBD::SQLite::db::column_info = \&_sqlite_column_info;
-}
+#BEGIN {
+#    *DBD::SQLite::db::column_info = \&_sqlite_column_info;
+#}
 
 sub _sqlite_column_info {
     my ( $dbh, $catalog, $schema, $table, $column ) = @_;
