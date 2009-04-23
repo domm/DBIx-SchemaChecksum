@@ -11,5 +11,5 @@ my $sc2 = DBIx::SchemaChecksum->new( dbh => $sc->dbh );
 my $checksum = $sc->checksum;
 my $checksum2 = $sc2->checksum;
 
-is( $checksum, '5f22e538285f79ec558e16dbfeb0b34a36e4da19', 'base checksum' );
-is( $checksum2, '5f22e538285f79ec558e16dbfeb0b34a36e4da19', 'base checksum' );
+is( $checksum, '216c74385e1fc6ecb2ec65c792d0d243fdd795bd', 'base checksum' );
+is( $checksum2, '216c74385e1fc6ecb2ec65c792d0d243fdd795bd', 'base checksum' );

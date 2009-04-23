@@ -1,5 +1,5 @@
--- preSHA1sum: 5f22e538285f79ec558e16dbfeb0b34a36e4da19
--- postSHA1sum: 6620c14bb4aaafdcf142022b5cef7f74ee7c7383 
+-- preSHA1sum: 216c74385e1fc6ecb2ec65c792d0d243fdd795bd
+-- postSHA1sum: 216c74385e1fc6ecb2ec65c792d0d243fdd795bd
 
 create table yat (
 	yet_another_column text
