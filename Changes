@@ -1,5 +1,12 @@
 Revision history for DBIx-SchemaChecksum
 
+0.27   2009-04-23 22:21:29
+    - remove schema name from nextval: because this causes a lot of 
+      trouble - THIS WILL BREAK YOUR OLD CHECKSUMS!! (Thomas Klausner)
+    - added option --dump_checksums which automatically dumps all 
+      checksum sources (Thomas Klausner)
+
+
 0.26   2008-11-24 11:35:07
     - sort unique keys because sometimes PG reports them in a 
       different order
