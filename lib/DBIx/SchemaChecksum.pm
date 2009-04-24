@@ -34,7 +34,6 @@ has 'verbose'      => ( is => 'rw', isa => 'Bool', default => 0 );
 has 'dump_checksums' => ( is => 'rw', isa => 'Bool', default => 0 );
 has 'no_prompt'    => ( is => 'rw', isa => 'Bool', default => 0 );
 has 'dry_run'      => ( is => 'rw', isa => 'Bool', default => 0 );
-has 'ignore_order' => ( is => 'rw', isa => 'Bool', default => 0 );
 has 'show_update_path'  => ( is => 'rw', isa => 'Bool', default => 0 );
 
 # internal
@@ -153,14 +152,14 @@ sub schemadump {
     my $dbh = $self->dbh;
 
     my @metadata = qw(COLUMN_NAME COLUMN_SIZE NULLABLE TYPE_NAME COLUMN_DEF);
-    push( @metadata, 'ORDINAL_POSITION' ) unless $self->ignore_order;
 
     my %relevants = ();
     foreach my $schema ( @{ $self->schemata } ) {
         foreach
             my $table ( $dbh->tables( $catalog, $schema, '%', $tabletype ) )
         {
-            my %data = ( table => $table );
+            $table=~s/"//g;
+            my %data;
 
             # remove schema name from table
             my $t = $table;
@@ -175,13 +174,30 @@ sub schemadump {
             my $column_info = $sth_col->fetchall_hashref('COLUMN_NAME');
 
             while ( my ( $column, $data ) = each %$column_info ) {
-                $data{columns}{$column}
-                    = { map { $_ => $data->{$_} } @metadata };
+                my $info = { map { $_ => $data->{$_} } @metadata };
+
                 # add postgres enums
                 if ( $data->{pg_enum_values} ) {
-                    $data{columns}{$column}{pg_enum_values}
-                        = $data->{pg_enum_values};
+                    $info->{pg_enum_values} = $data->{pg_enum_values};
                 }
+                
+                # some cleanup
+                if (my $default = $info->{COLUMN_DEF}) {
+                    if ( $default =~ /nextval/ ) {
+                        $default =~ m{'([\w\.\-_]+)'};
+                        if ($1) {
+                            my $new = $1;
+                            $new =~ s/^\w+\.//;
+                            $default = 'nextval:' . $new;
+                        }
+                    }
+                    $default=~s/["'\(\)\[\]\{\}]//g;
+                    $info->{COLUMN_DEF}=$default;
+                }
+                
+                $info->{TYPE_NAME} =~ s/^(?:.+\.)?(.+)$/$1/g;
+                
+                $data{columns}{$column} = $info;
             }
 
             # foreign keys
@@ -209,22 +225,6 @@ sub schemadump {
                 $data{unique_keys} = \@unique if @unique;
             }
 
-            # postgres cleanup
-            foreach my $col ( values %{ $data{columns} } ) {
-                #  strip schema dependent type definition
-                $col->{TYPE_NAME} =~ s/^(?:.+\.)?(.+)$/$1/g;
-
-                # remove types from autoincrement
-                if ( $col->{COLUMN_DEF} && $col->{COLUMN_DEF} =~ /nextval/ ) {
-                    $col->{COLUMN_DEF} =~ m{'([\w\.\-_]+)'};
-                    if ($1) {
-                        my $new = $1;
-                        $new =~ s/^\w+\.//;
-                        $col->{COLUMN_DEF} = 'nextval:' . $new;
-                    }
-                }
-            }
-
             $relevants{$table} = \%data;
         }
 
@@ -232,79 +232,6 @@ sub schemadump {
     my $dumper = Data::Dumper->new( [ \%relevants ] );
     $dumper->Sortkeys(1);
     return $self->_schemadump( scalar $dumper->Dump );
-}
-
-# sqlite column_info monkeypatch
-# see http://rt.cpan.org/Public/Bug/Display.html?id=13631
-#BEGIN {
-#    *DBD::SQLite::db::column_info = \&_sqlite_column_info;
-#}
-
-sub _sqlite_column_info {
-    my ( $dbh, $catalog, $schema, $table, $column ) = @_;
-
-    $table =~ s/["']//g;
-    $column = undef
-        if defined $column && $column eq '%';
-
-    my $sth_columns = $dbh->prepare(qq{PRAGMA table_info('$table')});
-    $sth_columns->execute;
-
-    my @names = qw( TABLE_CAT TABLE_SCHEM TABLE_NAME COLUMN_NAME
-        DATA_TYPE TYPE_NAME COLUMN_SIZE BUFFER_LENGTH
-        DECIMAL_DIGITS NUM_PREC_RADIX NULLABLE
-        REMARKS COLUMN_DEF SQL_DATA_TYPE SQL_DATETIME_SUB
-        CHAR_OCTET_LENGTH ORDINAL_POSITION IS_NULLABLE
-    );
-
-    my @cols;
-    while ( my $col_info = $sth_columns->fetchrow_hashref ) {
-        next if defined $column && $column ne $col_info->{name};
-
-        my %col;
-
-        $col{TABLE_NAME}  = $table;
-        $col{COLUMN_NAME} = $col_info->{name};
-
-        my $type = $col_info->{type};
-        if ( $type =~ s/(\w+)\((\d+)(?:,(\d+))?\)/$1/ ) {
-            $col{COLUMN_SIZE}    = $2;
-            $col{DECIMAL_DIGITS} = $3;
-        }
-
-        $col{TYPE_NAME} = $type;
-
-        $col{COLUMN_DEF} = $col_info->{dflt_value}
-            if defined $col_info->{dflt_value};
-
-        if ( $col_info->{notnull} ) {
-            $col{NULLABLE}    = 0;
-            $col{IS_NULLABLE} = 'NO';
-        }
-        else {
-            $col{NULLABLE}    = 1;
-            $col{IS_NULLABLE} = 'YES';
-        }
-
-        for my $key (@names) {
-            $col{$key} = undef
-                unless exists $col{$key};
-        }
-
-        push @cols, \%col;
-    }
-
-    my $sponge = DBI->connect( "DBI:Sponge:", '', '' )
-        or
-        return $dbh->DBI::set_err( $DBI::err, "DBI::Sponge: $DBI::errstr" );
-    my $sth = $sponge->prepare(
-        "column_info $table",
-        {   rows          => [ map { [ @{$_}{@names} ] } @cols ],
-            NUM_OF_FIELDS => scalar @names,
-            NAME          => \@names,
-        }
-    ) or return $dbh->DBI::set_err( $sponge->err(), $sponge->errstr() );
-    return $sth;
 }
 
 =head3 apply_sql_snippets
