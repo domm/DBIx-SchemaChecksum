@@ -13,19 +13,19 @@ my $sc =
 my $update = $sc->build_update_path('t/dbs/snippets2');
 is( int keys %$update, 3, '3 updates' );
 is(
-    $update->{'5f22e538285f79ec558e16dbfeb0b34a36e4da19'}->[1],
-    '6620c14bb4aaafdcf142022b5cef7f74ee7c7383',
+    $update->{'d3c790b3634c0527494a9c42b02e8214b4cca656'}->[1],
+    '2becef8911e9ece65b74ae0c510f8b67780ec656',
     'first sum link'
 );
 is(
-    $update->{'6620c14bb4aaafdcf142022b5cef7f74ee7c7383'}->[0],
+    $update->{'2becef8911e9ece65b74ae0c510f8b67780ec656'}->[0],
     'SAME_CHECKSUM','same_checksum');
 is(
-    $update->{'6620c14bb4aaafdcf142022b5cef7f74ee7c7383'}->[2],'6620c14bb4aaafdcf142022b5cef7f74ee7c7383','has same checksum');
+    $update->{'2becef8911e9ece65b74ae0c510f8b67780ec656'}->[2],'2becef8911e9ece65b74ae0c510f8b67780ec656','has same checksum');
 is(
-    $update->{'6620c14bb4aaafdcf142022b5cef7f74ee7c7383'}->[4],'39219d6fd802540c79b0a93d7111ea45f66e9518','second sum link'
+    $update->{'2becef8911e9ece65b74ae0c510f8b67780ec656'}->[4],'d1ed5de12cf82a688959d5b5ca05ece7f0e316ff','second sum link'
 );
-is( $update->{'7a1263a17bc9648e06de64fabb688633feb04f05'},
+is( $update->{'75c04e839dfe8e58303d2aaa4673833edc126152'},
     undef, 'end of chain' );
 
 

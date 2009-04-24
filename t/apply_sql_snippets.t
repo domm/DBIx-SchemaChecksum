@@ -12,14 +12,14 @@ SKIP: {
     my $sc = DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/update.db", no_prompt=>1 );
 
     my $pre_checksum = $sc->checksum;
-    is ($pre_checksum,'216c74385e1fc6ecb2ec65c792d0d243fdd795bd','checksum after two changes ok');
+    is ($pre_checksum,'d3c790b3634c0527494a9c42b02e8214b4cca656','checksum after two changes ok');
 
     $sc->build_update_path( 't/dbs/snippets' );
     eval { $sc->apply_sql_snippets($pre_checksum) };
     like($@,qr/^No update found/,'end of chain');
 
     my $post_checksum = $sc->checksum;
-    is ($post_checksum,'216c74385e1fc6ecb2ec65c792d0d243fdd795bd','checksum after two changes ok');
+    is ($post_checksum,'d3c790b3634c0527494a9c42b02e8214b4cca656','checksum after two changes ok');
 
     copy('t/dbs/update.tpl','t/dbs/update.db') || die "cannot create test db: $!";
 }

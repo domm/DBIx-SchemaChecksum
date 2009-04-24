@@ -13,7 +13,7 @@ SKIP: {
     is($sc->show_update_path,1,'show update path is set');
 
     my $pre_checksum = $sc->checksum;
-    is ($pre_checksum,'216c74385e1fc6ecb2ec65c792d0d243fdd795bd','pre checksum');
+    is ($pre_checksum,'d3c790b3634c0527494a9c42b02e8214b4cca656','pre checksum');
     my $capture = IO::Capture::Stdout->new();
     $capture->start;
     $sc->build_update_path( 't/dbs/snippets2' );
