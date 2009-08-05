@@ -307,8 +307,15 @@ sub apply_file {
         my $dbh = $self->dbh;
         $dbh->begin_work;
 
+		my $split_regex = qr/(?!:[\\]);/;
+
+		if ($content =~ m/--\s*split-at:\s*(\S+)\n/s) {
+			warn "Splitting $file commands at >$1<";
+			$split_regex = qr/$1/;
+		}
+
         $content =~ s/^\s*--.+$//gm;
-        foreach my $command ( split( /(?!:[\\]);/, $content ) ) {
+        foreach my $command ( split( $split_regex , $content ) ) {
             $command =~ s/\A\s+//;
             $command =~ s/\s+\Z//;
 
