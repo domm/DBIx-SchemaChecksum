@@ -286,7 +286,7 @@ sub apply_file {
     else {
         my $ask_user = 1;
         while ($ask_user) {
-            print "Do you want me to apply <" . $file->basename . ">? [y/n] ";
+            print "Do you want me to apply <" . $file->basename . ">? [y/n/s] ";
             my $in = <STDIN>;
             chomp($in);
             if ( $in =~ /^y/i ) {
@@ -296,6 +296,9 @@ sub apply_file {
             elsif ( $in =~ /^n/i ) {
                 $yes      = 0;
                 $ask_user = 0;
+            }
+            elsif ( $in =~ /^s/i) {
+                return $self->apply_sql_snippets($expected_post_checksum);
             }
         }
     }
