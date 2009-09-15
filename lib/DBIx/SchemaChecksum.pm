@@ -278,6 +278,9 @@ sub apply_file {
         return $self->apply_sql_snippets($expected_post_checksum);
     }
 
+    my $no_checksum_change;
+    $no_checksum_change=1 if $self->checksum eq $expected_post_checksum;
+
     my $yes = 0;
     if ( $self->no_prompt ) {
         $yes = 1;
@@ -286,7 +289,7 @@ sub apply_file {
     else {
         my $ask_user = 1;
         while ($ask_user) {
-            print "Do you want me to apply <" . $file->basename . ">? [y/n/s] ";
+            print "Do you want me to apply <" . $file->basename . ">".($no_checksum_change ?" (won't change the checksum)" : '')."? [y/n".( $no_checksum_change ?'/s' : '')."] ";
             my $in = <STDIN>;
             chomp($in);
             if ( $in =~ /^y/i ) {
@@ -297,7 +300,7 @@ sub apply_file {
                 $yes      = 0;
                 $ask_user = 0;
             }
-            elsif ( $in =~ /^s/i) {
+            elsif ( $no_checksum_change &&  $in =~ /^s/i) {
                 return $self->apply_sql_snippets($expected_post_checksum);
             }
         }
