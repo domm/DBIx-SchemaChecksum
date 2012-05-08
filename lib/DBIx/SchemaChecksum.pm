@@ -256,7 +256,7 @@ sub apply_sql_snippets {
     unless ($update) {
         my $this_checksum = $self->checksum;
         $self->dump_checksum($this_checksum) if $self->dump_checksums; 
-        die "No update found that's based on $this_checksum.\n";
+        die "No update found that's based on $this_checksum.";
     }
 
     if ( $update->[0] eq 'SAME_CHECKSUM' ) {
