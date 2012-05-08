@@ -206,9 +206,14 @@ sub schemadump {
             if ($sth_fk) {
                 $data{foreign_keys} = $sth_fk->fetchall_arrayref( {
                         map { $_ => 1 }
-                            qw(FK_NAME UK_NAME UK_COLUMN_NAME FK_TABLE_NAME FK_COLUMN_NAME UPDATE_RULE DELETE_RULE DEFERRABILITY)
+                            qw(FK_NAME UK_NAME UK_COLUMN_NAME FK_TABLE_NAME FK_COLUMN_NAME UPDATE_RULE DELETE_RULE) #DEFERABILITY
+                                                                                                                   
                     }
                 );
+                # Nasty workaround
+                foreach my $row (@{$data{foreign_keys}}) {
+                    $row->{DEFERRABILITY} = undef;
+                }
             }
 
             # postgres unique constraints
