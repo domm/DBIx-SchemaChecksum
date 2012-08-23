@@ -31,10 +31,14 @@ has 'tabletype' => (
     is => 'ro',
     isa => 'Str',
     default => 'table',
-    documentation => q[table type according to DBI->table_info]
+    documentation => q[Table type according to DBI->table_info]
 );
 
-has 'sqlsnippetdir' => ( isa => 'Str', is => 'ro' );
+has 'sqlsnippetdir' => (
+    isa => 'Str',
+    is => 'ro',
+    documentation => q[Directory containing sql update files],
+);
 
 # mainly needed for scripts
 has 'verbose'      => ( is => 'rw', isa => 'Bool', default => 0 );
