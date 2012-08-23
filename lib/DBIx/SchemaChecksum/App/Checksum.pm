@@ -4,5 +4,7 @@ use MooseX::App qw(Config);
 extends qw(DBIx::SchemaChecksum::App);
 
 sub run {
+    my $self = shift;
+    say $self->scs->checksum;
 }
 1;
