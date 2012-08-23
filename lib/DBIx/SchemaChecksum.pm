@@ -226,6 +226,7 @@ sub schemadump {
     }
     my $dumper = Data::Dumper->new( [ \%relevants ] );
     $dumper->Sortkeys(1);
+    $dumper->Indent(1);
     return $self->_schemadump( scalar $dumper->Dump );
 }
 
