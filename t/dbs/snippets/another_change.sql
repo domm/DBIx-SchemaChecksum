@@ -1,5 +1,5 @@
--- preSHA1sum: 6620c14bb4aaafdcf142022b5cef7f74ee7c7383
--- postSHA1sum: 39219d6fd802540c79b0a93d7111ea45f66e9518
+-- preSHA1sum: 056914cd5020547e62aebc320bb4128d8d277410
+-- postSHA1sum: ddba663135de32f678d284a36a138e50e9b41515
 
 alter table yat add column foo text;
 
