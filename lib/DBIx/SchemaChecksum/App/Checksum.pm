@@ -13,7 +13,7 @@ option 'show_dump' => (
 sub run {
     my $self = shift;
 
-    say $self->scs->schemadump if $self->show_dump;
-    say $self->scs->checksum;
+    say $self->schemadump if $self->show_dump;
+    say $self->checksum;
 }
 1;

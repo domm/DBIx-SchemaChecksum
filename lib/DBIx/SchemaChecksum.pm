@@ -14,10 +14,25 @@ with  'MooseX::Getopt';
 
 has 'dbh' => ( is => 'ro', required=>1 );
 
-has 'catalog' => ( is => 'ro', isa => 'Str', default => '%' );
-has 'schemata' =>
-    ( is => 'ro', isa => 'ArrayRef[Str]', default => sub { ['%'] } );
-has 'tabletype' => ( is => 'ro', isa => 'Str', default => 'table' );
+has 'catalog' => (
+    is => 'ro',
+    isa => 'Str',
+    default => '%',
+    documentation => q[might be required by some DBI drivers]
+);
+
+has 'schemata' => (
+    is => 'ro',
+    isa => 'ArrayRef[Str]',
+    default => sub { ['%'] },
+    documentation => q[List of schematas to include in checksum]
+);
+has 'tabletype' => (
+    is => 'ro',
+    isa => 'Str',
+    default => 'table',
+    documentation => q[table type according to DBI->table_info]
+);
 
 has 'sqlsnippetdir' => ( isa => 'Str', is => 'ro' );
 
