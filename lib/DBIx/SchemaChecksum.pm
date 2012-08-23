@@ -10,6 +10,7 @@ use Data::Dumper;
 use Path::Class;
 use Carp;
 use File::Find::Rule;
+with  'MooseX::Getopt';
 
 has 'dbh' => ( is => 'ro', required=>1 );
 
