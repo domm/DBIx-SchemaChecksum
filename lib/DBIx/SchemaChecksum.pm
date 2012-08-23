@@ -11,16 +11,7 @@ use Path::Class;
 use Carp;
 use File::Find::Rule;
 
-with 'MooseX::Getopt';
-
-has 'dsn'      => ( isa => 'Str', is => 'ro' );
-has 'user'     => ( isa => 'Str', is => 'ro' );
-has 'password' => ( isa => 'Str', is => 'ro' );
-
-# for strange reasons, MooseX::Getop does not work with DBI::db
-# constraint
-#has 'dbh'      => ( isa => 'DBI::db', is  => 'rw' );
-has 'dbh' => ( is => 'rw' );
+has 'dbh' => ( is => 'ro', required=>1 );
 
 has 'catalog' => ( is => 'ro', isa => 'Str', default => '%' );
 has 'schemata' =>
@@ -95,27 +86,6 @@ Updates a schema based on the current checksum and SQL snippet files
 =head2 Public Methods
 
 =cut
-
-=head3 BUILD
-
-Moose Object Builder which sets up the DB connection.
-
-=cut
-
-sub BUILD {
-    my $self = shift;
-
-    confess "Attribute (dsn) or (dbh) is required"
-        unless $self->dsn || $self->dbh;
-
-    unless ( defined $self->dbh() ) {
-        my $dbh = DBI->connect( $self->dsn, $self->user, $self->password,
-            { RaiseError => 1 } );
-
-        $self->dbh($dbh);
-    }
-
-}
 
 =head3 checksum
 
