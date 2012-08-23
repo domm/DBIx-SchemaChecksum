@@ -6,6 +6,9 @@ use Carp qw(croak);
 
 option '+sqlsnippetdir' => ( required => 1);
 
+# TODO: better prompting via Term::ReadKey/Line
+# TODO: remove dry_run, implement as new command 'show_update_plan' (oder so)
+
 sub run {
     my $self = shift;
 
