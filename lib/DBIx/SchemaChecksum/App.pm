@@ -8,7 +8,9 @@ use DBI;
 option 'dsn'      => ( isa => 'Str', is => 'ro', required=>1, documentation=>q[DBI Data Source Name] );
 option 'user'     => ( isa => 'Str', is => 'ro', documentation=>q[username to connect to database] );
 option 'password' => ( isa => 'Str', is => 'ro', documentation=>q[password to connect to database] );
-option [qw(+catalog +schemata +tabletype)] => ();
+option '+catalog' => ( documentation => q[might be required by some DBI drivers]);
+option '+schemata' => ( documentation => q[List of schematas to include in checksum] );
+option '+tabletype' => ( documentation => q[table type according to DBI->table_info] );
 
 has '+dbh' => (lazy_build=>1);
 sub _build_dbh {
