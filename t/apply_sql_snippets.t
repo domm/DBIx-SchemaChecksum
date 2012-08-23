@@ -3,19 +3,19 @@ use warnings;
 use Test::More tests => 4;
 use Test::NoWarnings;
 use DBIx::SchemaChecksum;
+use DBIx::SchemaChecksum::App::ApplyChanges;
 use File::Copy;
 use DBI;
-my $dbh = DBI->connect("dbi:SQLite:dbname=t/dbs/update.db");
 
 SKIP: {
     copy('t/dbs/update.tpl','t/dbs/update.db') || skip "cannot create test db",3;
 
-    my $sc = DBIx::SchemaChecksum->new( dbh=>$dbh, no_prompt=>1 );
+    my $sc = DBIx::SchemaChecksum::App::ApplyChanges->new( dsn => "dbi:SQLite:dbname=t/dbs/update.db", no_prompt=>1, sqlsnippetdir=> 't/dbs/snippets');
 
     my $pre_checksum = $sc->checksum;
     is ($pre_checksum,'25a88a7fe53f646ffd399d91888a0b28098a41d1','checksum after two changes ok');
 
-    $sc->build_update_path( 't/dbs/snippets' );
+    $sc->build_update_path;
     eval { $sc->apply_sql_snippets($pre_checksum) };
     like($@,qr/^No update found/,'end of chain');
 
