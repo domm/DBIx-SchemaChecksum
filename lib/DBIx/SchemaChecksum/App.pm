@@ -8,6 +8,7 @@ use DBI;
 option 'dsn'      => ( isa => 'Str', is => 'ro', required=>1, documentation=>q[DBI Data Source Name] );
 option 'user'     => ( isa => 'Str', is => 'ro', documentation=>q[username to connect to database] );
 option 'password' => ( isa => 'Str', is => 'ro', documentation=>q[password to connect to database] );
+option [qw(+catalog +schemata +tabletype)] => ();
 
 has '+dbh' => (lazy_build=>1);
 sub _build_dbh {
@@ -20,9 +21,17 @@ sub _build_dbh {
 has 'scs' => (is=>'ro',isa=>'DBIx::SchemaChecksum', lazy_build=>1);
 sub _build_scs {
     my $self = shift;
-    return DBIx::SchemaChecksum->new(
+    my %opts = (
         dbh => $self->dbh,
     );
+
+    foreach my $attr (qw(catalog schemata tabletype)) {
+        if ($self->$attr) {
+            $opts{$attr} = $self->$attr;
+        }
+    }
+
+    return DBIx::SchemaChecksum->new( %opts );
 }
 
 1;
