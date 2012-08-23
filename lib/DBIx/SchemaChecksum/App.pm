@@ -13,7 +13,9 @@ has '+dbh' => (lazy_build=>1);
 sub _build_dbh {
     my $self = shift;
     return DBI->connect( $self->dsn, $self->user, $self->password,
-        { RaiseError => 1 } );
+        { RaiseError => 1 } # TODO: set dbi->connect opts via App
+    );
+}
 
 }
 
