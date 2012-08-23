@@ -17,6 +17,12 @@ sub _build_dbh {
     );
 }
 
+has 'scs' => (is=>'ro',isa=>'DBIx::SchemaChecksum', lazy_build=>1);
+sub _build_scs {
+    my $self = shift;
+    return DBIx::SchemaChecksum->new(
+        dbh => $self->dbh,
+    );
 }
 
 1;
