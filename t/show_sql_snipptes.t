@@ -1,7 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 7;
-use Test::NoWarnings;
+use Test::Most;
 use DBIx::SchemaChecksum;
 use File::Copy;
 use IO::Capture::Stdout;
@@ -9,7 +8,8 @@ use IO::Capture::Stdout;
 SKIP: {
     copy('t/dbs/update.tpl','t/dbs/update.db') || skip "cannot create test db",3;
 
-    my $sc = DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/update.db", no_prompt=>1, show_update_path=>1 );
+    my $sc = DBIx::SchemaChecksum->new( dbh => DBI->connect("dbi:SQLite:dbname=t/dbs/update.db" ));
+ #   my $sc = DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/update.db", no_prompt=>1, show_update_path=>1 );
     is($sc->show_update_path,1,'show update path is set');
 
     my $pre_checksum = $sc->checksum;
@@ -28,3 +28,4 @@ SKIP: {
     copy('t/dbs/update.tpl','t/dbs/update.db') || die "cannot create test db: $!";
 }
 
+done_testing();

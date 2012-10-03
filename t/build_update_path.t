@@ -1,44 +1,42 @@
 use strict;
 use warnings;
-use Test::More tests => 10;
-use Test::NoWarnings;
-use Test::Deep;
+use Test::Most;
 use DBI;
 use DBIx::SchemaChecksum;
 use File::Spec;
 
-my $sc =
-  DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/update.db" );
+my $sc = DBIx::SchemaChecksum->new( dbh => DBI->connect("dbi:SQLite:dbname=t/dbs/base.db") );
 
 my $update = $sc->build_update_path('t/dbs/snippets');
+#use Data::Dumper;warn Dumper $update;
 is( int keys %$update, 2, '2 updates' );
 is(
-    $update->{'5f22e538285f79ec558e16dbfeb0b34a36e4da19'}->[1],
-    '6620c14bb4aaafdcf142022b5cef7f74ee7c7383',
+    $update->{'25a88a7fe53f646ffd399d91888a0b28098a41d1'}->[1],
+    '056914cd5020547e62aebc320bb4128d8d277410',
     'first sum link'
 );
 is(
-    $update->{'6620c14bb4aaafdcf142022b5cef7f74ee7c7383'}->[1],
-    '39219d6fd802540c79b0a93d7111ea45f66e9518',
+    $update->{'056914cd5020547e62aebc320bb4128d8d277410'}->[1],
+    'ddba663135de32f678d284a36a138e50e9b41515',
     'second sum link'
 );
-is( $update->{'7a1263a17bc9648e06de64fabb688633feb04f05'},
+is( $update->{'ddba663135de32f678d284a36a138e50e9b41515'},
     undef, 'end of chain' );
 
 cmp_deeply(
-    [File::Spec->splitdir($update->{'5f22e538285f79ec558e16dbfeb0b34a36e4da19'}->[0])],
+    [File::Spec->splitdir($update->{'25a88a7fe53f646ffd399d91888a0b28098a41d1'}->[0])],
     [qw(t dbs snippets first_change.sql)],
     'first snippet'
 );
 cmp_deeply(
-    [File::Spec->splitdir($update->{'6620c14bb4aaafdcf142022b5cef7f74ee7c7383'}->[0])],
+    [File::Spec->splitdir($update->{'056914cd5020547e62aebc320bb4128d8d277410'}->[0])],
     [qw(t dbs snippets another_change.sql)],
     'second snippet'
 );
 
 # corner cases
 my $sc2 = DBIx::SchemaChecksum->new(
-    dsn          => "dbi:SQLite:dbname=t/dbs/update.db",
+    dbh =>DBI->connect("dbi:SQLite:dbname=t/dbs/base.db"),
     sqlsnippetdir => 't/dbs/no_snippets'
 );
 my $update2 = $sc2->build_update_path();
@@ -46,7 +44,7 @@ is( $update2, undef, 'no snippets found' );
 
 eval {
     my $sc3 = DBIx::SchemaChecksum->new(
-        dsn          => "dbi:SQLite:dbname=t/dbs/update.db",
+        dbh =>DBI->connect("dbi:SQLite:dbname=t/dbs/base.db"),
         sqlsnippetdir => 't/no_snippts_here',
     );
     $sc->build_update_path;
@@ -55,12 +53,12 @@ like($@,qr/please specify sqlsnippetdir/i,'no snippet dir');
 
 eval {
     my $sc4 = DBIx::SchemaChecksum->new(
-        dsn          => "dbi:SQLite:dbname=t/dbs/update.db",
+        dbh =>DBI->connect("dbi:SQLite:dbname=t/dbs/base.db"),
         sqlsnippetdir => 't/build_update_path.t',
     );
     $sc4->build_update_path;
 };
 like($@,qr/cannot find sqlsnippetdir/i,'no snippet dir');
 
-
+done_testing();
 
