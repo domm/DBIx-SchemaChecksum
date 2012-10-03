@@ -1,14 +1,11 @@
 use strict;
 use warnings;
-use Test::More tests => 7;
-use Test::NoWarnings;
-use Test::Deep;
+use Test::Most;
 use DBI;
 use DBIx::SchemaChecksum;
 use File::Spec;
 
-my $sc =
-  DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/update.db" );
+my $sc = DBIx::SchemaChecksum->new( dbh =>DBI->connect("dbi:SQLite:dbname=t/dbs/base.db"));
 
 my $update = $sc->build_update_path('t/dbs/snippets2');
 is( int keys %$update, 3, '3 updates' );
@@ -29,4 +26,4 @@ is( $update->{'75c04e839dfe8e58303d2aaa4673833edc126152'},
     undef, 'end of chain' );
 
 
-
+done_testing();
