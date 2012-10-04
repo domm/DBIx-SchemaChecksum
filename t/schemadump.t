@@ -7,7 +7,7 @@ use MakeTmpDb;
 
 my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh );
 
-my $dump = $sc->schemadump;
+my $dump = $sc->_schemadump;
 like( $dump, qr/first_table/,                   'found table' );
 like( $dump, qr/columns/,                       'found columns' );
 like( $dump, qr/column_name.*?id/i,             'found column id' );
