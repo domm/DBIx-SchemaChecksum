@@ -10,12 +10,11 @@ use DBIx::SchemaChecksum::App::ShowUpdatePath;
 
 my $sc = DBIx::SchemaChecksum::App::ShowUpdatePath->new(
     dsn => MakeTmpDb->dsn,
-    sqlsnippetdir=> 't/dbs/snippets'
+    sqlsnippetdir=> 't/dbs/snippets2'
 );
 
 my $pre_checksum = $sc->checksum;
 is ($pre_checksum,'25a88a7fe53f646ffd399d91888a0b28098a41d1','pre checksum');
-$sc->build_update_path( 't/dbs/snippets2' );
 trap { $sc->show_update_path($pre_checksum) };
 
 like($trap->stdout,qr/first_change/,'1st');

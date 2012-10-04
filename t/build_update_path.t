@@ -6,10 +6,9 @@ use File::Spec;
 use lib qw(t);
 use MakeTmpDb;
 
-my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh);
+my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh, sqlsnippetdir=>'t/dbs/snippets' );
 
-my $update = $sc->build_update_path('t/dbs/snippets');
-#use Data::Dumper;warn Dumper $update;
+my $update = $sc->_update_path;
 is( int keys %$update, 2, '2 updates' );
 is(
     $update->{'25a88a7fe53f646ffd399d91888a0b28098a41d1'}->[1],
@@ -38,26 +37,28 @@ cmp_deeply(
 # corner cases
 my $sc2 = DBIx::SchemaChecksum->new(
     dbh => MakeTmpDb->dbh,
-    sqlsnippetdir => 't/dbs/no_snippets'
+    sqlsnippetdir => 't/dbs/no_snippets',
 );
-my $update2 = $sc2->build_update_path();
-is( $update2, undef, 'no snippets found' );
+eval {
+    $sc2->_update_path;
+};
+like($@,qr/Attribute \(_update_path\) .* value undef/,'no snippets found, so update_path is empty');
 
 eval {
     my $sc3 = DBIx::SchemaChecksum->new(
         dbh => MakeTmpDb->dbh,
         sqlsnippetdir => 't/no_snippts_here',
     );
-    $sc->build_update_path;
+    $sc3->_update_path;
 };
-like($@,qr/please specify sqlsnippetdir/i,'no snippet dir');
+like($@,qr/Cannot find sqlsnippetdir/i,'no snippet dir');
 
 eval {
     my $sc4 = DBIx::SchemaChecksum->new(
         dbh => MakeTmpDb->dbh,
         sqlsnippetdir => 't/build_update_path.t',
     );
-    $sc4->build_update_path;
+    $sc4->_update_path;
 };
 like($@,qr/cannot find sqlsnippetdir/i,'no snippet dir');
 

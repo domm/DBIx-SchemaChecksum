@@ -13,7 +13,6 @@ my $sc = DBIx::SchemaChecksum::App::ApplyChanges->new(
 my $pre_checksum = $sc->checksum;
 is ($pre_checksum,'25a88a7fe53f646ffd399d91888a0b28098a41d1','pre checksum');
 
-$sc->build_update_path;
 trap { $sc->apply_sql_snippets($pre_checksum) };
 my @stdout = split(/\n/,$trap->stdout);
 like($stdout[2],qr{Apply second_change_no_checksum_change.sql \(won't change checksum\)?},'Output includes "wont change checksum"');

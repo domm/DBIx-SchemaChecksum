@@ -6,9 +6,12 @@ use File::Spec;
 use lib qw(t);
 use MakeTmpDb;
 
-my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh );
+my $sc = DBIx::SchemaChecksum->new(
+    dbh => MakeTmpDb->dbh,
+    sqlsnippetdir => 't/dbs/snippets2',
+);
 
-my $update = $sc->build_update_path('t/dbs/snippets2');
+my $update = $sc->_update_path;
 is( int keys %$update, 3, '3 updates' );
 is(
     $update->{'25a88a7fe53f646ffd399d91888a0b28098a41d1'}->[1],

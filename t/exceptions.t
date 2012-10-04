@@ -7,10 +7,6 @@ use MakeTmpDb;
 
 my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh );
 
-# TODO moved to different class. check after refctoring if and where we need this test
-#eval { $sc->apply_sql_snippets };
-#like($@,qr/no current checksum/i,'apply_sql_snippets: no current checksum');
-
 eval { $sc->get_checksums_from_snippet };
 like($@,qr/need a filename/i,'get_checksums_from_snippet: no filename');
 

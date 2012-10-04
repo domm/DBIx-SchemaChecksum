@@ -13,7 +13,6 @@ my $sc = DBIx::SchemaChecksum::App::ApplyChanges->new(
 my $pre_checksum = $sc->checksum;
 is ($pre_checksum,'25a88a7fe53f646ffd399d91888a0b28098a41d1','checksum after two changes ok');
 
-$sc->build_update_path;
 trap { $sc->apply_sql_snippets($pre_checksum) };
 
 is($trap->exit,0,'exit 0');

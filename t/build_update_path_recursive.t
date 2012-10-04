@@ -6,9 +6,9 @@ use File::Spec;
 use lib qw(t);
 use MakeTmpDb;
 
-my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh );
+my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh, sqlsnippetdir=>'t/dbs/snippets_recursive' );
 
-my $update = $sc->build_update_path('t/dbs/snippets_recursive');
+my $update = $sc->_update_path;
 is( int keys %$update, 2, '2 updates' );
 is(
     $update->{'5f22e538285f79ec558e16dbfeb0b34a36e4da19'}->[1],
