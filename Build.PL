@@ -13,6 +13,8 @@ my $builder = Module::Build->new(
         'Test::NoWarnings' => '0.084',
         'Test::Deep'       => '0.099',
         'DBD::SQLite'      => '1.14',
+        'Test::Most'       => '0.31',
+        'Module::Pluggable' => '4.0',
     },
     requires => {
         'perl'             => '5.010',
