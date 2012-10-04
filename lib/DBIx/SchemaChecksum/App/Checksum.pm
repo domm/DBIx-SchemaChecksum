@@ -1,6 +1,6 @@
 package DBIx::SchemaChecksum::App::Checksum;
 use 5.010;
-use MooseX::App qw(Config);
+use MooseX::App::Command;
 extends qw(DBIx::SchemaChecksum::App);
 
 option 'show_dump' => (

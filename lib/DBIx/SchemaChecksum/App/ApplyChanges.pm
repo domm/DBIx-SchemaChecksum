@@ -1,6 +1,6 @@
 package DBIx::SchemaChecksum::App::ApplyChanges;
 use 5.010;
-use MooseX::App qw(Config);
+use MooseX::App::Command;
 extends qw(DBIx::SchemaChecksum::App);
 use Carp qw(croak);
 
@@ -156,5 +156,6 @@ sub apply_file {
         exit;
     }
 }
+
 
 1;
