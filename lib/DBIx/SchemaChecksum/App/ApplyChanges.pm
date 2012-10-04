@@ -11,7 +11,6 @@ has 'no_prompt'    => ( is => 'rw', isa => 'Bool', default => 0, documentation=>
 sub run {
     my $self = shift;
 
-    $self->build_update_path;
     $self->apply_sql_snippets($self->checksum);
 }
 

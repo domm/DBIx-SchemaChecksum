@@ -55,7 +55,7 @@ has 'dry_run'      => ( is => 'rw', isa => 'Bool', default => 0 );
 
 # internal
 
-has '_update_path' => ( is => 'rw', isa => 'HashRef' );
+has '_update_path' => ( is => 'rw', isa => 'HashRef', lazy_build=>1 );
 
 =head1 NAME
 
@@ -235,9 +235,9 @@ their C<preSHA1sum> and C<postSHA1sum>.
 
 =cut
 
-sub build_update_path {
+sub _build__update_path {
     my $self = shift;
-    my $dir = shift || $self->sqlsnippetdir;
+    my $dir = $self->sqlsnippetdir;
     croak("Please specify sqlsnippetdir") unless $dir;
     croak("Cannot find sqlsnippetdir: $dir") unless -d $dir;
 
@@ -304,9 +304,8 @@ The file has to contain this info in SQL comments, eg:
 =cut
 
 sub get_checksums_from_snippet {
-    my $self     = shift;
-    my $filename = shift;
-    croak "Need a filename" unless $filename;
+    my ($self, $filename) = @_;
+    die "need a filename" unless $filename;
 
     my %checksums;
 

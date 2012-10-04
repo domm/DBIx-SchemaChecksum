@@ -10,7 +10,6 @@ option '+sqlsnippetdir' => ( required => 1);
 sub run {
     my $self = shift;
 
-    $self->build_update_path;
     $self->show_update_path( $self->from_checksum || $self->checksum );
 }
 
