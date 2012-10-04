@@ -41,15 +41,20 @@ has 'sqlsnippetdir' => (
     documentation => q[Directory containing sql update files],
 );
 
+has '_schemadump' => (
+    isa=>'Str',
+    is=>'rw',
+    lazy_build=>1,
+    clearer=>'reset_checksum',
+);
+
 # mainly needed for scripts
 has 'verbose'      => ( is => 'rw', isa => 'Bool', default => 0 );
 has 'dump_checksums' => ( is => 'rw', isa => 'Bool', default => 0 );
-has 'no_prompt'    => ( is => 'rw', isa => 'Bool', default => 0 );
 has 'dry_run'      => ( is => 'rw', isa => 'Bool', default => 0 );
 
 # internal
 
-has '_schemadump'  => ( is => 'rw', isa => 'Str' );
 has '_update_path' => ( is => 'rw', isa => 'HashRef' );
 
 =head1 NAME
@@ -107,19 +112,9 @@ Updates a schema based on the current checksum and SQL snippet files
 
 =cut
 
-=head3 checksum
-
-    my $checksum = $sc->checksum;
-
-Return the checksum (as a SHA1 digest)
-
-=cut
-
 sub checksum {
     my $self = shift;
-
-    my $as_string = $self->schemadump;
-    return Digest::SHA1::sha1_hex($as_string);
+    return Digest::SHA1::sha1_hex($self->_schemadump);
 }
 
 =head3 schemadump
@@ -131,10 +126,8 @@ Dump).
 
 =cut
 
-sub schemadump {
+sub _build__schemadump {
     my $self = shift;
-
-    return $self->_schemadump if $self->_schemadump;
 
     my $tabletype = $self->tabletype;
     my $catalog   = $self->catalog;
@@ -170,7 +163,7 @@ sub schemadump {
                 if ( $data->{pg_enum_values} ) {
                     $info->{pg_enum_values} = $data->{pg_enum_values};
                 }
-                
+
                 # some cleanup
                 if (my $default = $info->{COLUMN_DEF}) {
                     if ( $default =~ /nextval/ ) {
@@ -184,9 +177,9 @@ sub schemadump {
                     $default=~s/["'\(\)\[\]\{\}]//g;
                     $info->{COLUMN_DEF}=$default;
                 }
-                
+
                 $info->{TYPE_NAME} =~ s/^(?:.+\.)?(.+)$/$1/g;
-                
+
                 $data{columns}{$column} = $info;
             }
 
@@ -196,8 +189,7 @@ sub schemadump {
             if ($sth_fk) {
                 $data{foreign_keys} = $sth_fk->fetchall_arrayref( {
                         map { $_ => 1 }
-                            qw(FK_NAME UK_NAME UK_COLUMN_NAME FK_TABLE_NAME FK_COLUMN_NAME UPDATE_RULE DELETE_RULE) #DEFERABILITY
-                                                                                                                   
+                            qw(FK_NAME UK_NAME UK_COLUMN_NAME FK_TABLE_NAME FK_COLUMN_NAME UPDATE_RULE DELETE_RULE)
                     }
                 );
                 # Nasty workaround
@@ -227,7 +219,8 @@ sub schemadump {
     my $dumper = Data::Dumper->new( [ \%relevants ] );
     $dumper->Sortkeys(1);
     $dumper->Indent(1);
-    return $self->_schemadump( scalar $dumper->Dump );
+    my $dump = $dumper->Dump;
+    return $dump;
 }
 
 =head3 build_update_path
