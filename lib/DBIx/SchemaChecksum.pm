@@ -50,7 +50,6 @@ has '_schemadump' => (
 
 # mainly needed for scripts
 has 'verbose'      => ( is => 'rw', isa => 'Bool', default => 0 );
-has 'dump_checksums' => ( is => 'rw', isa => 'Bool', default => 0 );
 has 'dry_run'      => ( is => 'rw', isa => 'Bool', default => 0 );
 
 # internal
