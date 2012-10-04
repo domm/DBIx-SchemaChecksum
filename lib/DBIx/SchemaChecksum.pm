@@ -41,20 +41,18 @@ has 'sqlsnippetdir' => (
     documentation => q[Directory containing sql update files],
 );
 
+# mainly needed for scripts
+has 'verbose'      => ( is => 'rw', isa => 'Bool', default => 0 );
+has 'dry_run'      => ( is => 'rw', isa => 'Bool', default => 0 );
+
+# internal
+has '_update_path' => ( is => 'rw', isa => 'HashRef', lazy_build=>1 );
 has '_schemadump' => (
     isa=>'Str',
     is=>'rw',
     lazy_build=>1,
     clearer=>'reset_checksum',
 );
-
-# mainly needed for scripts
-has 'verbose'      => ( is => 'rw', isa => 'Bool', default => 0 );
-has 'dry_run'      => ( is => 'rw', isa => 'Bool', default => 0 );
-
-# internal
-
-has '_update_path' => ( is => 'rw', isa => 'HashRef', lazy_build=>1 );
 
 =head1 NAME
 
