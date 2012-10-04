@@ -27,6 +27,7 @@ has 'schemata' => (
     default => sub { ['%'] },
     documentation => q[List of schematas to include in checksum]
 );
+
 has 'tabletype' => (
     is => 'ro',
     isa => 'Str',
@@ -45,7 +46,6 @@ has 'verbose'      => ( is => 'rw', isa => 'Bool', default => 0 );
 has 'dump_checksums' => ( is => 'rw', isa => 'Bool', default => 0 );
 has 'no_prompt'    => ( is => 'rw', isa => 'Bool', default => 0 );
 has 'dry_run'      => ( is => 'rw', isa => 'Bool', default => 0 );
-has 'show_update_path'  => ( is => 'rw', isa => 'Bool', default => 0 );
 
 # internal
 
