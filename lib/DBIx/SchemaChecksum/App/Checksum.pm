@@ -14,6 +14,6 @@ sub run {
     my $self = shift;
 
     say $self->checksum;
-    say $self->schemadump if $self->show_dump;
+    say $self->_schemadump if $self->show_dump;
 }
 1;
