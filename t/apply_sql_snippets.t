@@ -13,7 +13,7 @@ my $sc = DBIx::SchemaChecksum::App::ApplyChanges->new(
 my $pre_checksum = $sc->checksum;
 is ($pre_checksum,'25a88a7fe53f646ffd399d91888a0b28098a41d1','checksum after two changes ok');
 
-trap { $sc->apply_sql_snippets($pre_checksum) };
+trap { $sc->run };
 
 is($trap->exit,0,'exit 0');
 like($trap->stdout,qr/Apply first_change\.sql/,'Output: prompt for first_change.sql');
