@@ -1,10 +1,11 @@
 use strict;
 use warnings;
 use Test::Most;
-use DBI;
 use DBIx::SchemaChecksum;
+use lib qw(t);
+use MakeTmpDb;
 
-my $sc = DBIx::SchemaChecksum->new( dbh =>DBI->connect("dbi:SQLite:dbname=t/dbs/base.db"));
+my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh );
 
 # TODO moved to different class. check after refctoring if and where we need this test
 #eval { $sc->apply_sql_snippets };

@@ -1,11 +1,12 @@
 use strict;
 use warnings;
 use Test::Most;
-use DBI;
 use DBIx::SchemaChecksum;
 use File::Spec;
+use lib qw(t);
+use MakeTmpDb;
 
-my $sc = DBIx::SchemaChecksum->new( dbh =>DBI->connect("dbi:SQLite:dbname=t/dbs/base.db"));
+my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh );
 
 my $update = $sc->build_update_path('t/dbs/snippets_recursive');
 is( int keys %$update, 2, '2 updates' );

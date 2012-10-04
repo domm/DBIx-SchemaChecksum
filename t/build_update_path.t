@@ -1,11 +1,12 @@
 use strict;
 use warnings;
 use Test::Most;
-use DBI;
 use DBIx::SchemaChecksum;
 use File::Spec;
+use lib qw(t);
+use MakeTmpDb;
 
-my $sc = DBIx::SchemaChecksum->new( dbh => DBI->connect("dbi:SQLite:dbname=t/dbs/base.db") );
+my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh);
 
 my $update = $sc->build_update_path('t/dbs/snippets');
 #use Data::Dumper;warn Dumper $update;
@@ -36,7 +37,7 @@ cmp_deeply(
 
 # corner cases
 my $sc2 = DBIx::SchemaChecksum->new(
-    dbh =>DBI->connect("dbi:SQLite:dbname=t/dbs/base.db"),
+    dbh => MakeTmpDb->dbh,
     sqlsnippetdir => 't/dbs/no_snippets'
 );
 my $update2 = $sc2->build_update_path();
@@ -44,7 +45,7 @@ is( $update2, undef, 'no snippets found' );
 
 eval {
     my $sc3 = DBIx::SchemaChecksum->new(
-        dbh =>DBI->connect("dbi:SQLite:dbname=t/dbs/base.db"),
+        dbh => MakeTmpDb->dbh,
         sqlsnippetdir => 't/no_snippts_here',
     );
     $sc->build_update_path;
@@ -53,7 +54,7 @@ like($@,qr/please specify sqlsnippetdir/i,'no snippet dir');
 
 eval {
     my $sc4 = DBIx::SchemaChecksum->new(
-        dbh =>DBI->connect("dbi:SQLite:dbname=t/dbs/base.db"),
+        dbh => MakeTmpDb->dbh,
         sqlsnippetdir => 't/build_update_path.t',
     );
     $sc4->build_update_path;

@@ -1,10 +1,11 @@
 use strict;
 use warnings;
 use Test::Most;
-use DBI;
 use DBIx::SchemaChecksum;
+use lib qw(t);
+use MakeTmpDb;
 
-my $sc = DBIx::SchemaChecksum->new( dbh => DBI->connect("dbi:SQLite:dbname=t/dbs/update.db" ));
+my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh );
 
 my $dump = $sc->schemadump;
 like( $dump, qr/first_table/,                   'found table' );

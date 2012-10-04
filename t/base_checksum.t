@@ -1,10 +1,11 @@
 use strict;
 use warnings;
 use Test::Most;
-use DBI;
+use lib qw(t);
+use MakeTmpDb;
 use DBIx::SchemaChecksum;
 
-my $sc = DBIx::SchemaChecksum->new( dbh => DBI->connect("dbi:SQLite:dbname=t/dbs/base.db") );
+my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh );
 
 my $checksum = $sc->checksum;
 

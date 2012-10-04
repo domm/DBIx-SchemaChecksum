@@ -1,26 +1,23 @@
 use strict;
 use warnings;
-use Test::More tests => 4;
-use Test::NoWarnings;
+use Test::Most;
 use DBIx::SchemaChecksum;
-use File::Copy;
+use DBIx::SchemaChecksum::App::ApplyChanges;
+use lib qw(t);
+use MakeTmpDb;
 
+my $sc = DBIx::SchemaChecksum::App::ApplyChanges->new(
+    dsn => MakeTmpDb->dsn,
+    no_prompt=>1, sqlsnippetdir=> 't/dbs/snippets2');
 
-SKIP: {
-    copy('t/dbs/update.tpl','t/dbs/update.db') || skip "cannot create test db",3;
+my $pre_checksum = $sc->checksum;
+is ($pre_checksum,'25a88a7fe53f646ffd399d91888a0b28098a41d1','pre checksum');
 
-    my $sc = DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/update.db", no_prompt=>1 );
+$sc->build_update_path;
+eval { $sc->apply_sql_snippets($pre_checksum) };
+like($@,qr/^No update found/,'end of chain');
 
-    my $pre_checksum = $sc->checksum;
-    is ($pre_checksum,'d3c790b3634c0527494a9c42b02e8214b4cca656','pre checksum');
+my $post_checksum = $sc->checksum;
+is ($post_checksum,'f8334e554fc5f7cac3ffda285a8ae8c876fa5956','checksum after two changes ok');
 
-    $sc->build_update_path( 't/dbs/snippets2' );
-    eval { $sc->apply_sql_snippets($pre_checksum) };
-    like($@,qr/^No update found/,'end of chain');
-
-    my $post_checksum = $sc->checksum;
-    is ($post_checksum,'75c04e839dfe8e58303d2aaa4673833edc126152','checksum after two changes ok');
-
-    copy('t/dbs/update.tpl','t/dbs/update.db') || die "cannot create test db: $!";
-}
-
+done_testing();
