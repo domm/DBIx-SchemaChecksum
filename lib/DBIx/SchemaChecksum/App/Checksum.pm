@@ -16,4 +16,6 @@ sub run {
     say $self->checksum;
     say $self->_schemadump if $self->show_dump;
 }
+
+__PACKAGE__->meta->make_immutable();
 1;

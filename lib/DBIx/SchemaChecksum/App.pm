@@ -33,4 +33,5 @@ sub _build_dbh {
     );
 }
 
+__PACKAGE__->meta->make_immutable();
 1;

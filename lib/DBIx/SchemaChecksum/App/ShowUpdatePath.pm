@@ -41,4 +41,5 @@ sub report_file {
     say $file->relative($self->sqlsnippetdir) ." ($checksum)";
 }
 
+__PACKAGE__->meta->make_immutable();
 1;

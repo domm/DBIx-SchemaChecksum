@@ -5,4 +5,5 @@ extends qw(DBIx::SchemaChecksum::App);
 
 sub run {}
 
+__PACKAGE__->meta->make_immutable();
 1;

@@ -127,5 +127,6 @@ sub apply_file {
     }
 }
 
-
+__PACKAGE__->meta->make_immutable();
 1;
+
