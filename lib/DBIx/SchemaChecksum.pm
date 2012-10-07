@@ -196,8 +196,7 @@ sub _build__schemadump {
             }
 
             # postgres unique constraints
-            # very crude hack to see if we're running postgres
-            if ( $INC{'DBD/Pg.pm'} ) {
+            if ( $dbh->{Driver}{Name} eq 'Pg') {
                 my @unique;
                 my $sth=$dbh->prepare( "select indexdef from pg_indexes where schemaname=? and tablename=?");
                 $sth->execute($schema, $t);
