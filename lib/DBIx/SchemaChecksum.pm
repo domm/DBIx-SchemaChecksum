@@ -28,13 +28,6 @@ has 'schemata' => (
     documentation => q[List of schematas to include in checksum]
 );
 
-has 'tabletype' => (
-    is => 'ro',
-    isa => 'Str',
-    default => 'table',
-    documentation => q[Table type according to DBI->table_info]
-);
-
 has 'sqlsnippetdir' => (
     isa => 'Str',
     is => 'ro',
@@ -126,7 +119,6 @@ Dump).
 sub _build__schemadump {
     my $self = shift;
 
-    my $tabletype = $self->tabletype;
     my $catalog   = $self->catalog;
 
     my $dbh = $self->dbh;
@@ -136,10 +128,15 @@ sub _build__schemadump {
     my %relevants = ();
     foreach my $schema ( @{ $self->schemata } ) {
         foreach
-            my $table ( $dbh->tables( $catalog, $schema, '%', $tabletype ) )
+            my $table ( $dbh->tables( $catalog, $schema, '%','' ) )
         {
             $table=~s/"//g;
             my %data;
+            
+            # TODO refactor sqlite exception
+            next
+                if $table eq 'temp.sqlite_temp_master'
+                || $table eq 'main.sqlite_master';
 
             # remove schema name from table
             my $t = $table;
@@ -347,12 +344,6 @@ Default C<%>.
 An Arrayref containg names of schematas to include in checksum calculation. See C<DBI::table_info>
 
 Default C<%>.
-
-=head3 tabletype
-
-What kind of tables to include in checksum calculation. See C<DBI::table_info>
-
-Default C<table>.
 
 =head3 verbose
 
