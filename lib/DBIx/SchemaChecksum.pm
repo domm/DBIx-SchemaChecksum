@@ -46,6 +46,20 @@ has '_schemadump' => (
     clearer=>'reset_checksum',
 );
 
+sub BUILD {
+    my ($self) = @_;
+
+    # Apply driver role to instance    
+    my $driver = $self->dbh->{Driver}{Name};
+    my $class = __PACKAGE__.'::Driver::'.$driver;
+    
+    if (Class::Load::try_load_class($class)) {
+        $class->meta->apply($self);   
+    }
+    
+    return $self;
+}
+
 =head1 NAME
 
 DBIx::SchemaChecksum - Generate and compare checksums of database schematas
