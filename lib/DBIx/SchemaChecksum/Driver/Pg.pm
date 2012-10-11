@@ -20,7 +20,7 @@ around '_build_schemadump_column' => sub {
     return $relevants;
 };
 
-around '_build_schemadump_taböe' => sub {
+around '_build_schemadump_table' => sub {
     my $orig = shift;
     my ($self,$schema,$table) = @_;
     
