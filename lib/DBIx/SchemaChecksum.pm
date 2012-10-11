@@ -144,100 +144,121 @@ Dump).
 
 =cut
 
-sub _build__schemadump {
+sub _build_schemadump {
     my $self = shift;
 
-    my $catalog   = $self->catalog;
-
-    my $dbh = $self->dbh;
-
-    my @metadata = qw(COLUMN_NAME COLUMN_SIZE NULLABLE TYPE_NAME COLUMN_DEF);
-
     my %relevants = ();
+    
     foreach my $schema ( @{ $self->schemata } ) {
-        foreach
-            my $table ( $dbh->tables( $catalog, $schema, '%','' ) )
-        {
-            $table=~s/"//g;
-            my %data;
-            
-            # TODO refactor sqlite exception
-            next
-                if $table eq 'temp.sqlite_temp_master'
-                || $table eq 'main.sqlite_master';
-
-            # remove schema name from table
-            my $t = $table;
-            $t =~ s/^.*?\.//;
-
-            my @pks = $dbh->primary_key( $catalog, $schema, $t );
-            $data{primary_keys} = \@pks if @pks;
-
-            # columns
-            my $sth_col = $dbh->column_info( $catalog, $schema, $t, '%' );
-
-            my $column_info = $sth_col->fetchall_hashref('COLUMN_NAME');
-
-            while ( my ( $column, $data ) = each %$column_info ) {
-                my $info = { map { $_ => $data->{$_} } @metadata };
-
-                # add postgres enums
-                if ( $data->{pg_enum_values} ) {
-                    $info->{pg_enum_values} = $data->{pg_enum_values};
-                }
-
-                # some cleanup
-                if (my $default = $info->{COLUMN_DEF}) {
-                    if ( $default =~ /nextval/ ) {
-                        $default =~ m{'([\w\.\-_]+)'};
-                        if ($1) {
-                            my $new = $1;
-                            $new =~ s/^\w+\.//;
-                            $default = 'nextval:' . $new;
-                        }
-                    }
-                    $default=~s/["'\(\)\[\]\{\}]//g;
-                    $info->{COLUMN_DEF}=$default;
-                }
-
-                $info->{TYPE_NAME} =~ s/^(?:.+\.)?(.+)$/$1/g;
-
-                $data{columns}{$column} = $info;
+        my $schema_relevants = $self->_build_schemadump_schema($schema);
+        while (my ($type,$type_value) = each %{$schema_relevants}) {
+            while (my ($key,$value) = each %{$type_value}) {
+                $relevants{$type}{$key} = $value;
             }
-
-            # foreign keys
-            my $sth_fk
-                = $dbh->foreign_key_info( '', '', '', $catalog, $schema, $t );
-            if ($sth_fk) {
-                $data{foreign_keys} = $sth_fk->fetchall_arrayref( {
-                        map { $_ => 1 }
-                            qw(FK_NAME UK_NAME UK_COLUMN_NAME FK_TABLE_NAME FK_COLUMN_NAME UPDATE_RULE DELETE_RULE DEFERRABILITY)
-                    }
-                );
-            }
-
-            # postgres unique constraints
-            if ( $dbh->{Driver}{Name} eq 'Pg') {
-                my @unique;
-                my $sth=$dbh->prepare( "select indexdef from pg_indexes where schemaname=? and tablename=?");
-                $sth->execute($schema, $t);
-                while (my ($index) =$sth->fetchrow_array) {
-                    $index=~s/$schema\.//g;
-                    push(@unique,$index);
-                }
-                @unique = sort (@unique);
-                $data{unique_keys} = \@unique if @unique;
-            }
-
-            $relevants{$table} = \%data;
         }
-
     }
+    
     my $dumper = Data::Dumper->new( [ \%relevants ] );
     $dumper->Sortkeys(1);
     $dumper->Indent(1);
     my $dump = $dumper->Dump;
+    
+    warn $dump;
+    
     return $dump;
+}
+
+sub _build_schemadump_schema {
+    my ($self,$schema) = @_;
+    
+    my %relevants = ();
+    $relevants{tables}    = $self->_build_schemadump_tables($schema);
+    $relevants{functions} = $self->_build_schemadump_functions($schema);
+    
+    return \%relevants; 
+}
+
+sub _build_schemadump_tables {
+    my ($self,$schema) = @_;
+
+    my $dbh = $self->dbh;
+    
+    my %relevants;
+    foreach my $table ( $dbh->tables( $self->catalog, $schema, '%' ) ) {
+        next
+            unless $table =~ m/^"(?<schema>.+)"\."(?<table>.+)"$/;
+        my $this_schema = $+{schema};
+        my $table = $+{table};
+        
+        my $table_data = $self->_build_schemadump_table($this_schema,$table);
+        next
+            unless $table_data;
+        $relevants{$this_schema.'.'.$table} = $table_data;
+    }
+    
+    return \%relevants;
+}
+
+sub _build_schemadump_functions {
+    my ($self,$schema) = @_;
+    return {};
+}
+
+sub _build_schemadump_table {
+    my ($self,$schema,$table) = @_;
+
+    my %relevants = ();
+    
+    my $dbh = $self->dbh;
+    
+    # Primary key
+    my @primary_keys = $dbh->primary_key( $self->catalog, $schema, $table );
+    $relevants{primary_keys} = \@primary_keys 
+        if scalar @primary_keys;
+    
+    # Columns
+    my $sth_col = $dbh->column_info( $self->catalog, $schema, $table, '%' );
+    my $column_info = $sth_col->fetchall_hashref('COLUMN_NAME');
+    while ( my ( $column, $data ) = each %$column_info ) {
+        my $column_data = $self->_build_schemadump_column($schema,$table,$column,$data);
+        $relevants{columns}{$column} = $column_data
+            if $column_data;
+    }
+    
+    # Foreign keys
+    my $sth_fk = $dbh->foreign_key_info( '%', '%', '%', $self->catalog, $schema, $table );
+    if ($sth_fk) {
+        $relevants{foreign_keys} = $sth_fk->fetchall_arrayref({
+            map { $_ => 1 }
+            qw(FK_NAME UK_NAME UK_COLUMN_NAME FK_TABLE_NAME FK_COLUMN_NAME UPDATE_RULE DELETE_RULE DEFERRABILITY)
+        });
+    }
+    
+    return \%relevants;
+}
+
+sub _build_schemadump_column {
+    my ($self,$schema,$table,$column,$data) = @_;
+    
+    my $relevants = { map { $_ => $data->{$_} } qw(COLUMN_NAME COLUMN_SIZE NULLABLE TYPE_NAME COLUMN_DEF) };
+
+    # some cleanup
+    if (my $default = $relevants->{COLUMN_DEF}) {
+        if ( $default =~ /nextval/ ) {
+            $default =~ m{'([\w\.\-_]+)'};
+            if ($1) {
+                my $new = $1;
+                $new =~ s/^\w+\.//;
+                $default = 'nextval:' . $new;
+            }
+        }
+        $default=~s/["'\(\)\[\]\{\}]//g;
+        $relevants->{COLUMN_DEF}=$default;
+    }
+
+    $relevants->{TYPE_NAME} =~ s/^(?:.+\.)?(.+)$/$1/g;
+    
+    return $relevants;
 }
 
 =head3 build_update_path
@@ -252,7 +273,7 @@ their C<preSHA1sum> and C<postSHA1sum>.
 
 =cut
 
-sub _build__update_path {
+sub _build_update_path {
     my $self = shift;
     my $dir = $self->sqlsnippetdir;
     croak("Please specify sqlsnippetdir") unless $dir;
