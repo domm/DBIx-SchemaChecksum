@@ -9,7 +9,7 @@ my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh );
 
 my $checksum = $sc->checksum;
 
-is( $checksum, '25a88a7fe53f646ffd399d91888a0b28098a41d1', 'base checksum' );
+is( $checksum, '660d1e9b6aec2ac84c2ff6b1acb5fe3450fdd013', 'base checksum' );
 
 done_testing();
 

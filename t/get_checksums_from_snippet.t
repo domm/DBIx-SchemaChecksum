@@ -8,7 +8,7 @@ use MakeTmpDb;
 my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh );
 
 my ($pre,$post) = $sc->get_checksums_from_snippet( 't/dbs/snippets/first_change.sql');
-is($pre,'25a88a7fe53f646ffd399d91888a0b28098a41d1','preSHA1sum');
-is($post,'056914cd5020547e62aebc320bb4128d8d277410','postSHA1sum');
+is($pre,'660d1e9b6aec2ac84c2ff6b1acb5fe3450fdd013','preSHA1sum');
+is($post,'e63a31c18566148984a317006dad897b75d8bdbe','postSHA1sum');
 
 done_testing();
