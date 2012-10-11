@@ -2,7 +2,9 @@ package DBIx::SchemaChecksum;
 
 use 5.010;
 use Moose;
-use version; our $VERSION = version->new('0.28');
+
+use version; 
+our $VERSION = version->new('0.28');
 
 use DBI;
 use Digest::SHA1;
@@ -10,9 +12,11 @@ use Data::Dumper;
 use Path::Class;
 use Carp;
 use File::Find::Rule;
-with  'MooseX::Getopt';
 
-has 'dbh' => ( is => 'ro', required=>1 );
+has 'dbh' => ( 
+    is => 'ro', 
+    required => 1 
+);
 
 has 'catalog' => (
     is => 'ro',
@@ -35,15 +39,26 @@ has 'sqlsnippetdir' => (
 );
 
 # mainly needed for scripts
-has 'verbose'      => ( is => 'rw', isa => 'Bool', default => 0 );
+has 'verbose' => ( 
+    is => 'rw', 
+    isa => 'Bool', 
+    default => 0 
+);
 
 # internal
-has '_update_path' => ( is => 'rw', isa => 'HashRef', lazy_build=>1 );
+has '_update_path' => ( 
+    is => 'rw', 
+    isa => 'HashRef', 
+    lazy_build => 1,
+    builder => '_build_update_path',
+);
+
 has '_schemadump' => (
     isa=>'Str',
     is=>'rw',
     lazy_build=>1,
     clearer=>'reset_checksum',
+    builder => '_build_schemadump',
 );
 
 sub BUILD {
