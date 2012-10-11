@@ -36,7 +36,6 @@ has 'sqlsnippetdir' => (
 
 # mainly needed for scripts
 has 'verbose'      => ( is => 'rw', isa => 'Bool', default => 0 );
-has 'dry_run'      => ( is => 'rw', isa => 'Bool', default => 0 );
 
 # internal
 has '_update_path' => ( is => 'rw', isa => 'HashRef', lazy_build=>1 );
