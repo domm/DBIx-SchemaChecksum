@@ -138,9 +138,21 @@ sub _build_schemadump {
     foreach my $schema ( @{ $self->schemata } ) {
         my $schema_relevants = $self->_build_schemadump_schema($schema);
         while (my ($type,$type_value) = each %{$schema_relevants}) {
-            while (my ($key,$value) = each %{$type_value}) {
-                $relevants{$type}{$key} = $value;
+            given (ref $type_value) {
+                when('ARRAY') {
+                    $relevants{$type} ||= [];
+                    foreach my $value (@{$type_value}) {
+                        push(@{$relevants{$type}}, $value);
+                    }
+                }
+                when('HASH') {
+                    while (my ($key,$value) = each %{$type_value}) {
+                        $relevants{$type}{$key} = $value;
+                    }
+                }   
             }
+                    
+
         }
     }
     
