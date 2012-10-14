@@ -184,7 +184,7 @@ sub _build_schemadump_tables {
     my %relevants;
     foreach my $table ( $dbh->tables( $self->catalog, $schema, '%' ) ) {
         next
-            unless $table =~ m/^"(?<schema>.+)"\."(?<table>.+)"$/;
+            unless $table =~ m/^"?(?<schema>.+)"?\."?(?<table>.+)"?$/;
         my $this_schema = $+{schema};
         my $table = $+{table};
         
