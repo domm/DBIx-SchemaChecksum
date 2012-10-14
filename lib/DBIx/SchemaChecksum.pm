@@ -161,8 +161,6 @@ sub _build_schemadump {
     $dumper->Indent(1);
     my $dump = $dumper->Dump;
     
-    warn $dump;
-    
     return $dump;
 }
 
@@ -171,7 +169,8 @@ sub _build_schemadump_schema {
     
     my %relevants = ();
     $relevants{tables}    = $self->_build_schemadump_tables($schema);
-    $relevants{functions} = $self->_build_schemadump_functions($schema);
+#    $relevants{functions} = $self->_build_schemadump_functions($schema);
+#    $relevants{sequences} = $self->_build_schemadump_sequences($schema);
     
     return \%relevants; 
 }
@@ -197,11 +196,6 @@ sub _build_schemadump_tables {
     return \%relevants;
 }
 
-sub _build_schemadump_functions {
-    my ($self,$schema) = @_;
-    return {};
-}
-
 sub _build_schemadump_table {
     my ($self,$schema,$table) = @_;
 
@@ -219,10 +213,10 @@ sub _build_schemadump_table {
     my $column_info = $sth_col->fetchall_hashref('COLUMN_NAME');
     while ( my ( $column, $data ) = each %$column_info ) {
         my $column_data = $self->_build_schemadump_column($schema,$table,$column,$data);
-        $relevants{columns}{$column} = $column_data
+        $relevants{columns}->{$column} = $column_data
             if $column_data;
     }
-    
+
     # Foreign keys
     my $sth_fk = $dbh->foreign_key_info( '%', '%', '%', $self->catalog, $schema, $table );
     if ($sth_fk) {
