@@ -3,7 +3,7 @@ package DBIx::SchemaChecksum;
 use 5.010;
 use Moose;
 
-use version; 
+use version;
 our $VERSION = version->new('0.28');
 
 use DBI;
@@ -13,9 +13,9 @@ use Path::Class;
 use Carp;
 use File::Find::Rule;
 
-has 'dbh' => ( 
-    is => 'ro', 
-    required => 1 
+has 'dbh' => (
+    is => 'ro',
+    required => 1
 );
 
 has 'catalog' => (
@@ -38,17 +38,22 @@ has 'sqlsnippetdir' => (
     documentation => q[Directory containing sql update files],
 );
 
-# mainly needed for scripts
-has 'verbose' => ( 
-    is => 'rw', 
-    isa => 'Bool', 
-    default => 0 
+has 'driveropts' => (
+    isa     => 'HashRef',
+    is      => 'ro',
+    default => sub {{}},
+    documentation => q[Driver specific options],
 );
 
-# internal
-has '_update_path' => ( 
-    is => 'rw', 
-    isa => 'HashRef', 
+has 'verbose' => (
+    is => 'rw',
+    isa => 'Bool',
+    default => 0
+);
+
+has '_update_path' => (
+    is => 'rw',
+    isa => 'HashRef',
     lazy_build => 1,
     builder => '_build_update_path',
 );
@@ -64,14 +69,12 @@ has '_schemadump' => (
 sub BUILD {
     my ($self) = @_;
 
-    # Apply driver role to instance    
+    # Apply driver role to instance
     my $driver = $self->dbh->{Driver}{Name};
     my $class = __PACKAGE__.'::Driver::'.$driver;
-    
     if (Class::Load::try_load_class($class)) {
-        $class->meta->apply($self);   
+        $class->meta->apply($self);
     }
-    
     return $self;
 }
 
@@ -134,7 +137,7 @@ sub _build_schemadump {
     my $self = shift;
 
     my %relevants = ();
-    
+
     foreach my $schema ( @{ $self->schemata } ) {
         my $schema_relevants = $self->_build_schemadump_schema($schema);
         while (my ($type,$type_value) = each %{$schema_relevants}) {
@@ -149,50 +152,46 @@ sub _build_schemadump {
                     while (my ($key,$value) = each %{$type_value}) {
                         $relevants{$type}{$key} = $value;
                     }
-                }   
+                }
             }
-                    
-
         }
     }
-    
+
     my $dumper = Data::Dumper->new( [ \%relevants ] );
     $dumper->Sortkeys(1);
     $dumper->Indent(1);
     my $dump = $dumper->Dump;
-    
+
     return $dump;
 }
 
 sub _build_schemadump_schema {
     my ($self,$schema) = @_;
-    
+
     my %relevants = ();
     $relevants{tables}    = $self->_build_schemadump_tables($schema);
-#    $relevants{functions} = $self->_build_schemadump_functions($schema);
-#    $relevants{sequences} = $self->_build_schemadump_sequences($schema);
-    
-    return \%relevants; 
+
+    return \%relevants;
 }
 
 sub _build_schemadump_tables {
     my ($self,$schema) = @_;
 
     my $dbh = $self->dbh;
-    
+
     my %relevants;
     foreach my $table ( $dbh->tables( $self->catalog, $schema, '%' ) ) {
         next
             unless $table =~ m/^"?(?<schema>[^"]+)"?\."?(?<table>[^"]+)"?$/;
         my $this_schema = $+{schema};
         my $table = $+{table};
-        
+
         my $table_data = $self->_build_schemadump_table($this_schema,$table);
         next
             unless $table_data;
         $relevants{$this_schema.'.'.$table} = $table_data;
     }
-    
+
     return \%relevants;
 }
 
@@ -200,14 +199,14 @@ sub _build_schemadump_table {
     my ($self,$schema,$table) = @_;
 
     my %relevants = ();
-    
+
     my $dbh = $self->dbh;
-    
+
     # Primary key
     my @primary_keys = $dbh->primary_key( $self->catalog, $schema, $table );
-    $relevants{primary_keys} = \@primary_keys 
+    $relevants{primary_keys} = \@primary_keys
         if scalar @primary_keys;
-    
+
     # Columns
     my $sth_col = $dbh->column_info( $self->catalog, $schema, $table, '%' );
     my $column_info = $sth_col->fetchall_hashref('COLUMN_NAME');
@@ -225,13 +224,13 @@ sub _build_schemadump_table {
             qw(FK_NAME UK_NAME UK_COLUMN_NAME FK_TABLE_NAME FK_COLUMN_NAME UPDATE_RULE DELETE_RULE DEFERRABILITY)
         });
     }
-    
+
     return \%relevants;
 }
 
 sub _build_schemadump_column {
     my ($self,$schema,$table,$column,$data) = @_;
-    
+
     my $relevants = { map { $_ => $data->{$_} } qw(COLUMN_NAME COLUMN_SIZE NULLABLE TYPE_NAME COLUMN_DEF) };
 
     # some cleanup
@@ -249,7 +248,7 @@ sub _build_schemadump_column {
     }
 
     $relevants->{TYPE_NAME} =~ s/^(?:.+\.)?(.+)$/$1/g;
-    
+
     return $relevants;
 }
 
@@ -433,12 +432,12 @@ litte software company run by Koki, Domm
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2008 Thomas Klausner, revdev.at, all rights reserved.
+Copyright 2008 - 2012 Thomas Klausner, Maroš Kollár, Klaus Ita, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
-The full text of the license can be found in the LICENSE file included 
+The full text of the license can be found in the LICENSE file included
 with this module.
 
 =cut

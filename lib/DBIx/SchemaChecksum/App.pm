@@ -21,7 +21,7 @@ option 'password' => (
     is            => 'ro',
     documentation => q[password to connect to database]
 );
-option [qw(+catalog +schemata)] => ();
+option [qw(+catalog +schemata +driveropts)] => ();
 
 has '+dbh' => ( lazy_build => 1 );
 
