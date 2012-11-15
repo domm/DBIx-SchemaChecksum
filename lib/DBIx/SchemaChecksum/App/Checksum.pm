@@ -1,5 +1,8 @@
 package DBIx::SchemaChecksum::App::Checksum;
 use 5.010;
+
+# ABSTRACT: DBIx::SchemaChecksum command checksum
+
 use MooseX::App::Command;
 extends qw(DBIx::SchemaChecksum::App);
 

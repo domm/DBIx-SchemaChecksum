@@ -1,5 +1,8 @@
 package DBIx::SchemaChecksum::App::ShowUpdatePath;
 use 5.010;
+
+# ABSTRACT: DBIx::SchemaChecksum command show_update_path
+
 use MooseX::App::Command;
 extends qw(DBIx::SchemaChecksum::App);
 use Carp qw(croak);

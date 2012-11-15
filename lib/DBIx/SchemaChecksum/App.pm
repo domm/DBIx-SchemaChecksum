@@ -3,6 +3,8 @@ use 5.010;
 use MooseX::App qw(Config);
 extends qw(DBIx::SchemaChecksum);
 
+# ABSTRACT: App base class
+
 use DBI;
 
 option 'dsn' => (

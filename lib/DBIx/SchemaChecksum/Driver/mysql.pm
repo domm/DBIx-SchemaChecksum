@@ -1,6 +1,8 @@
 package DBIx::SchemaChecksum::Driver::mysql;
 use utf8;
 
+# ABSTRACT: MySQL driver for DBIx::SchemaChecksum
+
 use namespace::autoclean;
 use Moose::Role;
 

@@ -1,7 +1,7 @@
-# ============================================================================
 package DBIx::SchemaChecksum::Driver::Pg;
-# ============================================================================
 use utf8;
+
+# ABSTRACT: Pg driver for DBIx::SchemaChecksum
 
 use namespace::autoclean;
 use Moose::Role;

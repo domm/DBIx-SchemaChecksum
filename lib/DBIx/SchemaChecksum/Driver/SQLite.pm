@@ -1,7 +1,7 @@
-# ============================================================================
 package DBIx::SchemaChecksum::Driver::SQLite;
-# ============================================================================
 use utf8;
+
+# ABSTRACT: SQLite driver for DBIx::SchemaChecksum
 
 use namespace::autoclean;
 use Moose::Role;

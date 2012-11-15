@@ -3,8 +3,8 @@ package DBIx::SchemaChecksum;
 use 5.010;
 use Moose;
 
-use version;
-our $VERSION = version->new('0.28');
+# ABSTRACT: Generate and compare checksums of database schematas
+our $VERSION = '1.001';
 
 use DBI;
 use Digest::SHA1;
