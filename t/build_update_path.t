@@ -39,10 +39,8 @@ my $sc2 = DBIx::SchemaChecksum->new(
     dbh => MakeTmpDb->dbh,
     sqlsnippetdir => 't/dbs/no_snippets',
 );
-eval {
-    $sc2->_update_path;
-};
-like($@,qr/Attribute \(_update_path\) .* value undef/,'no snippets found, so update_path is empty');
+my $path = $sc2->_update_path;
+is($path,undef,'no snippets found, so update_path is empty');
 
 eval {
     my $sc3 = DBIx::SchemaChecksum->new(
