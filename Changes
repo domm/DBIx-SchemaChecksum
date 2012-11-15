@@ -1,5 +1,11 @@
 Revision history for DBIx-SchemaChecksum
 
+1.001   2012-11-15T17:40:04+0100
+    - app now based on MooseX::App
+    - lots of new options & commands
+    - doc update still pending...
+    - also use dzil
+
 0.27   2009-04-23 22:21:29
     - remove schema name from nextval: because this causes a lot of 
       trouble - THIS WILL BREAK YOUR OLD CHECKSUMS!! (Thomas Klausner)
