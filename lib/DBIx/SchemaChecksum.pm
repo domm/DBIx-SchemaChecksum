@@ -53,7 +53,7 @@ has 'verbose' => (
 
 has '_update_path' => (
     is => 'rw',
-    isa => 'HashRef',
+    isa => 'Maybe[HashRef]',
     lazy_build => 1,
     builder => '_build_update_path',
 );
