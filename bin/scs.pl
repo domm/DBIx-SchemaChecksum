@@ -9,3 +9,17 @@ use DBIx::SchemaChecksum::App;
 
 DBIx::SchemaChecksum::App->new_with_command->run();
 
+__END__
+
+=head1 USAGE
+
+Please run
+
+  scs.pl help
+
+to get information on available commands and command line options.
+
+=head1 SEE ALSO
+
+See C<perldoc DBIx::SchemaChecksum> for even more info.
+
