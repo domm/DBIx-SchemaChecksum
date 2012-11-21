@@ -18,7 +18,7 @@ sub run {
     $self->apply_sql_snippets($self->checksum);
 }
 
-=head3 apply_sql_snippets
+=method apply_sql_snippets
 
     $self->apply_sql_snippets( $starting_checksum );
 
