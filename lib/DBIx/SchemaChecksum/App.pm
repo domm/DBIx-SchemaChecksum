@@ -1,6 +1,6 @@
 package DBIx::SchemaChecksum::App;
 use 5.010;
-use MooseX::App qw(Config);
+use MooseX::App 1.08 qw(Config);
 extends qw(DBIx::SchemaChecksum);
 
 # ABSTRACT: App base class
@@ -37,3 +37,4 @@ sub _build_dbh {
 
 __PACKAGE__->meta->make_immutable();
 1;
+
