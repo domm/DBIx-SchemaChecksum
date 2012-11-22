@@ -115,7 +115,7 @@ sub _build_schemadump_functions {
     my $dbh = $self->dbh;
 
     # TODO handle aggregate and windowing functions
-    my $sth_functions = $dbh->prepare(q[SELECT pg_get_functiondef(x.oid)
+    my $sth_functions = $dbh->prepare(q[SELECT n.nspname, x.proname, pg_get_functiondef(x.oid)
         FROM pg_catalog.pg_proc x
         LEFT JOIN pg_namespace n ON n.oid = x.pronamespace
         WHERE proisagg = FALSE
@@ -125,13 +125,13 @@ sub _build_schemadump_functions {
         ORDER BY 1]);
 
     $sth_functions->execute($schema);
-
-    my @functions;
-    while (my ($index) = $sth_functions->fetchrow_array) {
-        push(@functions,$index);
+    
+    my %functions;
+    while (my ($this_schema,$name,$definition) = $sth_functions->fetchrow_array) {
+        $functions{$this_schema.'.'.$name} = $definition;
     }
-
-    return \@functions
+    
+    return \%functions
 };
 
 1;
