@@ -5,6 +5,7 @@ use Test::Trap;
 use DBIx::SchemaChecksum::App::ApplyChanges;
 use lib qw(t);
 use MakeTmpDb;
+use DBD::SQLite 1.35;
 
 my $sc = DBIx::SchemaChecksum::App::ApplyChanges->new(
     dsn => MakeTmpDb->dsn,
