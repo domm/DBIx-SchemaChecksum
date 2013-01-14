@@ -25,7 +25,7 @@ sub show_update_path {
 
     unless ($update) {
         say "No update found that's based on $this_checksum.";
-        exit;
+        return;
     }
 
     if ( $update->[0] eq 'SAME_CHECKSUM' ) {

@@ -37,7 +37,7 @@ sub apply_sql_snippets {
 
     unless ($update) {
         say "No update found that's based on $this_checksum.";
-        exit;
+        return;
     }
 
     if ( $update->[0] eq 'SAME_CHECKSUM' ) {
@@ -93,7 +93,7 @@ sub apply_file {
                 $dbh->rollback;
                 say "SQL error: $_";
                 say "ABORTING!";
-                exit 1;
+                return;
             };
             say "Successful!" if $self->verbose;
         }
@@ -119,7 +119,7 @@ sub apply_file {
             say "  got      $post_checksum";
             $dbh->rollback;
             say "ABORTING!";
-            exit 1;
+            return;
         }
     }
     elsif ($answer eq 's') {
@@ -127,7 +127,7 @@ sub apply_file {
     }
     else {
         say "Not applying $filename, so we stop.";
-        exit;
+        return;
     }
 }
 
