@@ -422,8 +422,6 @@ sub get_checksums_from_snippet {
 
 __PACKAGE__->meta->make_immutable();
 
-q{ Favourite record of the moment: The Dynamics - Version Excursions }
-
 __END__
 
 =method dbh
