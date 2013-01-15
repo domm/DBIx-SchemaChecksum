@@ -1,5 +1,12 @@
 Revision history for DBIx-SchemaChecksum
 
+1.003   2013-?
+    - require MooseX::App 1.13
+    - Better function introspection for postgres (breaks postgres checksums)
+    - fix test fails due to missing build_deps
+    - Do not exit, but return instead
+    
+
 1.002   2012-11-21T21:38:37+0100
     - require MooseX::App 1.08, which should fix the test fails
       reported by CPAN Testers (thanks!)
