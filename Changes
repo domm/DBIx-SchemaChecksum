@@ -1,5 +1,25 @@
 Revision history for DBIx-SchemaChecksum
 
+1.003   2013-?
+    - require MooseX::App 1.13
+    - Better function introspection for postgres (breaks postgres checksums)
+    - fix test fails due to missing build_deps
+    - Do not exit, but return instead
+    
+
+1.002   2012-11-21T21:38:37+0100
+    - require MooseX::App 1.08, which should fix the test fails
+      reported by CPAN Testers (thanks!)
+    - updated documentation
+
+
+1.001   2012-11-15T17:40:04+0100
+    - app now based on MooseX::App
+    - lots of new options & commands
+    - doc update still pending...
+    - also use dzil
+
+
 0.27   2009-04-23 22:21:29
     - remove schema name from nextval: because this causes a lot of 
       trouble - THIS WILL BREAK YOUR OLD CHECKSUMS!! (Thomas Klausner)

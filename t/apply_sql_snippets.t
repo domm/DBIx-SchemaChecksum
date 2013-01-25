@@ -1,26 +1,29 @@
 use strict;
 use warnings;
-use Test::More tests => 4;
-use Test::NoWarnings;
-use DBIx::SchemaChecksum;
-use File::Copy;
+use Test::Most;
+use Test::Trap;
+use DBIx::SchemaChecksum::App::ApplyChanges;
+use lib qw(t);
+use MakeTmpDb;
+use DBD::SQLite 1.35;
 
+my $sc = DBIx::SchemaChecksum::App::ApplyChanges->new(
+    dsn => MakeTmpDb->dsn,
+    no_prompt=>1, sqlsnippetdir=> 't/dbs/snippets');
 
-SKIP: {
-    copy('t/dbs/update.tpl','t/dbs/update.db') || skip "cannot create test db",3;
+my $pre_checksum = $sc->checksum;
+is ($pre_checksum,'660d1e9b6aec2ac84c2ff6b1acb5fe3450fdd013','checksum after two changes ok');
 
-    my $sc = DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/update.db", no_prompt=>1 );
+trap { $sc->run };
 
-    my $pre_checksum = $sc->checksum;
-    is ($pre_checksum,'d3c790b3634c0527494a9c42b02e8214b4cca656','checksum after two changes ok');
+is($trap->exit,0,'exit 0');
+like($trap->stdout,qr/Apply first_change\.sql/,'Output: prompt for first_change.sql');
+like($trap->stdout,qr/Apply another_change\.sql/,'Output: prompt for another_change.sql');
+like($trap->stdout,qr/post checksum OK/,'Output: post checksum OK');
+like($trap->stdout,qr/No update found that's based on/,'Output: end of tree');
 
-    $sc->build_update_path( 't/dbs/snippets' );
-    eval { $sc->apply_sql_snippets($pre_checksum) };
-    like($@,qr/^No update found/,'end of chain');
+my $post_checksum = $sc->checksum;
+is ($post_checksum,'b1387d808800a5969f0aa9bcae2d89a0d0b4620b','checksum after two changes ok');
 
-    my $post_checksum = $sc->checksum;
-    is ($post_checksum,'d3c790b3634c0527494a9c42b02e8214b4cca656','checksum after two changes ok');
-
-    copy('t/dbs/update.tpl','t/dbs/update.db') || die "cannot create test db: $!";
-}
+done_testing();
 

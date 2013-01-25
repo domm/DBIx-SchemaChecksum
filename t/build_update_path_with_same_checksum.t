@@ -1,32 +1,33 @@
 use strict;
 use warnings;
-use Test::More tests => 7;
-use Test::NoWarnings;
-use Test::Deep;
-use DBI;
+use Test::Most;
 use DBIx::SchemaChecksum;
 use File::Spec;
+use lib qw(t);
+use MakeTmpDb;
 
-my $sc =
-  DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/update.db" );
+my $sc = DBIx::SchemaChecksum->new(
+    dbh => MakeTmpDb->dbh,
+    sqlsnippetdir => 't/dbs/snippets2',
+);
 
-my $update = $sc->build_update_path('t/dbs/snippets2');
+my $update = $sc->_update_path;
 is( int keys %$update, 3, '3 updates' );
 is(
-    $update->{'d3c790b3634c0527494a9c42b02e8214b4cca656'}->[1],
-    '2becef8911e9ece65b74ae0c510f8b67780ec656',
+    $update->{'660d1e9b6aec2ac84c2ff6b1acb5fe3450fdd013'}->[1],
+    'e63a31c18566148984a317006dad897b75d8bdbe',
     'first sum link'
 );
 is(
-    $update->{'2becef8911e9ece65b74ae0c510f8b67780ec656'}->[0],
+    $update->{'e63a31c18566148984a317006dad897b75d8bdbe'}->[0],
     'SAME_CHECKSUM','same_checksum');
 is(
-    $update->{'2becef8911e9ece65b74ae0c510f8b67780ec656'}->[2],'2becef8911e9ece65b74ae0c510f8b67780ec656','has same checksum');
+    $update->{'e63a31c18566148984a317006dad897b75d8bdbe'}->[2],'e63a31c18566148984a317006dad897b75d8bdbe','has same checksum');
 is(
-    $update->{'2becef8911e9ece65b74ae0c510f8b67780ec656'}->[4],'d1ed5de12cf82a688959d5b5ca05ece7f0e316ff','second sum link'
+    $update->{'e63a31c18566148984a317006dad897b75d8bdbe'}->[4],'b1387d808800a5969f0aa9bcae2d89a0d0b4620b','second sum link'
 );
-is( $update->{'75c04e839dfe8e58303d2aaa4673833edc126152'},
+is( $update->{'55df89fd956a03d637b52d13281bc252896f602f'},
     undef, 'end of chain' );
 
 
-
+done_testing();

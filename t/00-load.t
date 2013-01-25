@@ -1,9 +1,9 @@
-#!perl -T
+#!/usr/bin/perl
+use Test::More;
+use lib 'lib';
+use Module::Pluggable search_path => [ 'DBIx::SchemaChecksum' ];
 
-use Test::More tests => 1;
+require_ok( $_ ) for sort 'DBIx::SchemaChecksum', __PACKAGE__->plugins;
 
-BEGIN {
-	use_ok( 'DBIx::SchemaChecksum' );
-}
+done_testing();
 
-diag( "Testing DBIx::SchemaChecksum $DBIx::SchemaChecksum::VERSION, Perl $], $^X" );

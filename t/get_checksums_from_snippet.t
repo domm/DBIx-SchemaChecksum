@@ -1,13 +1,14 @@
 use strict;
 use warnings;
-use Test::More tests => 3;
-use Test::NoWarnings;
-use DBI;
+use Test::Most;
 use DBIx::SchemaChecksum;
+use lib qw(t);
+use MakeTmpDb;
 
-my $sc = DBIx::SchemaChecksum->new( dsn => "dbi:SQLite:dbname=t/dbs/update.db" );
-
+my $sc = DBIx::SchemaChecksum->new( dbh => MakeTmpDb->dbh );
 
 my ($pre,$post) = $sc->get_checksums_from_snippet( 't/dbs/snippets/first_change.sql');
-is($pre,'5f22e538285f79ec558e16dbfeb0b34a36e4da19','preSHA1sum');
-is($post,'6620c14bb4aaafdcf142022b5cef7f74ee7c7383','postSHA1sum');
+is($pre,'660d1e9b6aec2ac84c2ff6b1acb5fe3450fdd013','preSHA1sum');
+is($post,'e63a31c18566148984a317006dad897b75d8bdbe','postSHA1sum');
+
+done_testing();
