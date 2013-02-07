@@ -36,6 +36,20 @@ sub apply_sql_snippets {
         if ( exists $update_path->{$this_checksum} );
 
     unless ($update) {
+        foreach my $update_entry (values %{$update_path}) {
+            my $post_checksum_index = 0;
+            while (@{$update_entry} > $post_checksum_index) {
+                if ($update_entry->[$post_checksum_index] eq 'SAME_CHECKSUM') {
+                    $post_checksum_index++;
+                    next;
+                }
+                if ($update_entry->[$post_checksum_index+1] eq $this_checksum) {
+                    say "db checksum $this_checksum matching ".$update_entry->[$post_checksum_index]->relative;
+                    return;
+                }
+                $post_checksum_index += 2;
+            }
+        }
         say "No update found that's based on $this_checksum.";
         exit;
     }
