@@ -125,7 +125,13 @@ sub apply_file {
         if ( $post_checksum eq $expected_post_checksum ) {
             say "post checksum OK";
             $dbh->commit;
-            return $self->apply_sql_snippets($post_checksum);
+            if ($self->_update_path->{$post_checksum}) {
+                return $self->apply_sql_snippets($post_checksum);
+            }
+            else {
+                say 'No more changes';
+                return;
+            }
         }
         else {
             say "post checksum mismatch!";
