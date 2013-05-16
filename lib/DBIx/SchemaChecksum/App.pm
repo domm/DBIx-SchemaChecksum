@@ -1,6 +1,6 @@
 package DBIx::SchemaChecksum::App;
 use 5.010;
-use MooseX::App 1.14 qw(Config);
+use MooseX::App 1.21 qw(Config);
 extends qw(DBIx::SchemaChecksum);
 
 # ABSTRACT: App base class
