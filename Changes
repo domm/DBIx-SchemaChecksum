@@ -1,11 +1,16 @@
 Revision history for DBIx-SchemaChecksum
 
-1.003   2013-?
-    - require MooseX::App 1.13
-    - Better function introspection for postgres (breaks postgres checksums)
+1.003   2013-10-09T15:02:40+0200
+    - make foreign keys work with current DBI/DBD/Pg (Thomas Klausner)
+    - removed given/when (Thomas Klausner)
+    - say that there are "No more changes" instead of "No update found
+      ..." (Jozef Kutej)
+    - require MooseX::App 1.13 (Klaus Ita)
+    - Better function introspection for postgres (breaks postgres
+      checksums) (Maros Kollar)
     - fix test fails due to missing build_deps
-    - Do not exit, but return instead
-    
+    - Do not exit, but return instead (Maros Kollar)
+
 
 1.002   2012-11-21T21:38:37+0100
     - require MooseX::App 1.08, which should fix the test fails
