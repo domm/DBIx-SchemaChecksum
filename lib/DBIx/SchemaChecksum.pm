@@ -278,12 +278,13 @@ sub _build_schemadump_table {
     }
 
     # Foreign keys
-    my $sth_fk = $dbh->foreign_key_info( '%', '%', '%', $self->catalog, $schema, $table );
+    my $sth_fk = $dbh->foreign_key_info( undef, undef, undef, $self->catalog, $schema, $table );
     if ($sth_fk) {
-        $relevants{foreign_keys} = $sth_fk->fetchall_arrayref({
-            map { $_ => 1 }
-            qw(FK_NAME UK_NAME UK_COLUMN_NAME FK_TABLE_NAME FK_COLUMN_NAME UPDATE_RULE DELETE_RULE DEFERRABILITY)
-        });
+        my $fk={};
+        while (my $data = $sth_fk->fetchrow_hashref) {
+            $fk->{$data->{FK_COLUMN_NAME}} = $data;
+        }
+        $relevants{foreign_keys} = $fk if keys %$fk;
     }
 
     return \%relevants;
