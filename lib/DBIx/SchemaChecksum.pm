@@ -158,17 +158,16 @@ sub _build_schemadump {
     foreach my $schema ( @{ $self->schemata } ) {
         my $schema_relevants = $self->_build_schemadump_schema($schema);
         while (my ($type,$type_value) = each %{$schema_relevants}) {
-            given (ref $type_value) {
-                when('ARRAY') {
-                    $relevants{$type} ||= [];
-                    foreach my $value (@{$type_value}) {
-                        push(@{$relevants{$type}}, $value);
-                    }
+            my $ref = ref($type_value);
+            if ($ref eq 'ARRAY') {
+                $relevants{$type} ||= [];
+                foreach my $value (@{$type_value}) {
+                    push(@{$relevants{$type}}, $value);
                 }
-                when('HASH') {
-                    while (my ($key,$value) = each %{$type_value}) {
-                        $relevants{$type}{$key} = $value;
-                    }
+            }
+            elsif ($ref eq 'HASH') {
+                while (my ($key,$value) = each %{$type_value}) {
+                    $relevants{$type}{$key} = $value;
                 }
             }
         }
