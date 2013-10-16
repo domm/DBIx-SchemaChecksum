@@ -4,7 +4,7 @@ use 5.010;
 use Moose;
 
 # ABSTRACT: Generate and compare checksums of database schematas
-our $VERSION = '1.003';
+our $VERSION = '1.004';
 
 use DBI;
 use Digest::SHA1;
