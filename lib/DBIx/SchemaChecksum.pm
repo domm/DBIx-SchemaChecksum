@@ -4,7 +4,7 @@ use 5.010;
 use Moose;
 
 # ABSTRACT: Generate and compare checksums of database schematas
-our $VERSION = '1.003';
+our $VERSION = '1.004';
 
 use DBI;
 use Digest::SHA1;
@@ -273,6 +273,7 @@ sub _build_schemadump_table {
     my $column_info = $sth_col->fetchall_hashref('COLUMN_NAME');
     while ( my ( $column, $data ) = each %$column_info ) {
         my $column_data = $self->_build_schemadump_column($schema,$table,$column,$data);
+        delete $column_data->{ORDINAL_POSITION};
         $relevants{columns}->{$column} = $column_data
             if $column_data;
     }
