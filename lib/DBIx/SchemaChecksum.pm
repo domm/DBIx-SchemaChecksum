@@ -283,6 +283,7 @@ sub _build_schemadump_table {
     if ($sth_fk) {
         my $fk={};
         while (my $data = $sth_fk->fetchrow_hashref) {
+            delete $data->{ORDINAL_POSITION};
             $fk->{$data->{FK_COLUMN_NAME}} = $data;
         }
         $relevants{foreign_keys} = $fk if keys %$fk;
