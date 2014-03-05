@@ -4,7 +4,7 @@ use 5.010;
 use Moose;
 
 # ABSTRACT: Generate and compare checksums of database schematas
-our $VERSION = '1.002';
+our $VERSION = '1.004';
 
 use DBI;
 use Digest::SHA1;
@@ -158,17 +158,16 @@ sub _build_schemadump {
     foreach my $schema ( @{ $self->schemata } ) {
         my $schema_relevants = $self->_build_schemadump_schema($schema);
         while (my ($type,$type_value) = each %{$schema_relevants}) {
-            given (ref $type_value) {
-                when('ARRAY') {
-                    $relevants{$type} ||= [];
-                    foreach my $value (@{$type_value}) {
-                        push(@{$relevants{$type}}, $value);
-                    }
+            my $ref = ref($type_value);
+            if ($ref eq 'ARRAY') {
+                $relevants{$type} ||= [];
+                foreach my $value (@{$type_value}) {
+                    push(@{$relevants{$type}}, $value);
                 }
-                when('HASH') {
-                    while (my ($key,$value) = each %{$type_value}) {
-                        $relevants{$type}{$key} = $value;
-                    }
+            }
+            elsif ($ref eq 'HASH') {
+                while (my ($key,$value) = each %{$type_value}) {
+                    $relevants{$type}{$key} = $value;
                 }
             }
         }
@@ -274,17 +273,20 @@ sub _build_schemadump_table {
     my $column_info = $sth_col->fetchall_hashref('COLUMN_NAME');
     while ( my ( $column, $data ) = each %$column_info ) {
         my $column_data = $self->_build_schemadump_column($schema,$table,$column,$data);
+        delete $column_data->{ORDINAL_POSITION};
         $relevants{columns}->{$column} = $column_data
             if $column_data;
     }
 
     # Foreign keys
-    my $sth_fk = $dbh->foreign_key_info( '%', '%', '%', $self->catalog, $schema, $table );
+    my $sth_fk = $dbh->foreign_key_info( undef, undef, undef, $self->catalog, $schema, $table );
     if ($sth_fk) {
-        $relevants{foreign_keys} = $sth_fk->fetchall_arrayref({
-            map { $_ => 1 }
-            qw(FK_NAME UK_NAME UK_COLUMN_NAME FK_TABLE_NAME FK_COLUMN_NAME UPDATE_RULE DELETE_RULE DEFERRABILITY)
-        });
+        my $fk={};
+        while (my $data = $sth_fk->fetchrow_hashref) {
+            delete $data->{ORDINAL_POSITION};
+            $fk->{$data->{FK_COLUMN_NAME}} = $data;
+        }
+        $relevants{foreign_keys} = $fk if keys %$fk;
     }
 
     return \%relevants;
@@ -421,8 +423,6 @@ sub get_checksums_from_snippet {
 }
 
 __PACKAGE__->meta->make_immutable();
-
-q{ Favourite record of the moment: The Dynamics - Version Excursions }
 
 __END__
 

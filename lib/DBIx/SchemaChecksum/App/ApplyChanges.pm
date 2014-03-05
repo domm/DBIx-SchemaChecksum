@@ -36,8 +36,22 @@ sub apply_sql_snippets {
         if ( exists $update_path->{$this_checksum} );
 
     unless ($update) {
+        foreach my $update_entry (values %{$update_path}) {
+            my $post_checksum_index = 0;
+            while (@{$update_entry} > $post_checksum_index) {
+                if ($update_entry->[$post_checksum_index] eq 'SAME_CHECKSUM') {
+                    $post_checksum_index++;
+                    next;
+                }
+                if ($update_entry->[$post_checksum_index+1] eq $this_checksum) {
+                    say "db checksum $this_checksum matching ".$update_entry->[$post_checksum_index]->relative;
+                    return;
+                }
+                $post_checksum_index += 2;
+            }
+        }
         say "No update found that's based on $this_checksum.";
-        exit;
+        return;
     }
 
     if ( $update->[0] eq 'SAME_CHECKSUM' ) {
@@ -93,7 +107,7 @@ sub apply_file {
                 $dbh->rollback;
                 say "SQL error: $_";
                 say "ABORTING!";
-                exit 1;
+                return;
             };
             say "Successful!" if $self->verbose;
         }
@@ -111,7 +125,13 @@ sub apply_file {
         if ( $post_checksum eq $expected_post_checksum ) {
             say "post checksum OK";
             $dbh->commit;
-            return $self->apply_sql_snippets($post_checksum);
+            if ($self->_update_path->{$post_checksum}) {
+                return $self->apply_sql_snippets($post_checksum);
+            }
+            else {
+                say 'No more changes';
+                return;
+            }
         }
         else {
             say "post checksum mismatch!";
@@ -119,7 +139,7 @@ sub apply_file {
             say "  got      $post_checksum";
             $dbh->rollback;
             say "ABORTING!";
-            exit 1;
+            return;
         }
     }
     elsif ($answer eq 's') {
@@ -127,7 +147,7 @@ sub apply_file {
     }
     else {
         say "Not applying $filename, so we stop.";
-        exit;
+        return;
     }
 }
 
