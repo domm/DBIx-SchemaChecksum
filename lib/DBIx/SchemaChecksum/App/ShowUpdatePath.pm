@@ -8,12 +8,20 @@ extends qw(DBIx::SchemaChecksum::App);
 use Carp qw(croak);
 
 option 'from_checksum'  => ( is => 'ro', isa => 'Str' );
+option 'output'  => ( is => 'ro', isa => 'Str', default=>'nice'); # todo enum
+option 'dbname' => ( is=>'ro', isa=>'Str', default=>'datebase_name');
 option '+sqlsnippetdir' => ( required => 1);
+
+has '_concat' => (is=>'rw',isa=>'Str', default=>'');
 
 sub run {
     my $self = shift;
 
     $self->show_update_path( $self->from_checksum || $self->checksum );
+
+    if ($self->output eq 'concat') {
+        say $self->_concat;
+    }
 }
 
 sub show_update_path {
@@ -41,7 +49,17 @@ sub show_update_path {
 
 sub report_file {
     my ($self, $file, $checksum) = @_;
-    say $file->relative($self->sqlsnippetdir) ." ($checksum)";
+
+    if ($self->output eq 'nice') {
+        say $file->relative($self->sqlsnippetdir) ." ($checksum)";
+    }
+    elsif ($self->output eq 'script') {
+        say 'psql '.$self->dbname.' -1 -f '.$file->relative($self->sqlsnippetdir);
+    }
+    elsif ($self->output eq 'concat') {
+        $self->_concat( $self->_concat
+        . "\n\n-- file: ".$file->relative($self->sqlsnippetdir)."\n".join('',$file->slurp)."\n" );
+    }
 }
 
 __PACKAGE__->meta->make_immutable();
