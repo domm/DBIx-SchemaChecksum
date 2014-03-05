@@ -1,5 +1,9 @@
 Revision history for DBIx-SchemaChecksum
 
+1.005   2013-10-16T11:37:31+0200
+    - more stable fix for foreign keys (Thomas Klausner)
+
+
 1.004   2013-10-16T11:15:56+0200
     - ignore ORDINAL_POSITION in foreign keys (Thomas Klausner)
 
