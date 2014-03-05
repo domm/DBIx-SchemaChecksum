@@ -277,7 +277,7 @@ sub _build_schemadump_table {
             if $column_data;
     }
 
-    # Foreign keys
+    # Foreign keys (only use a few selected meta-fields)
     my $sth_fk = $dbh->foreign_key_info( undef, undef, undef, $self->catalog, $schema, $table );
     if ($sth_fk) {
         my $fk={};
