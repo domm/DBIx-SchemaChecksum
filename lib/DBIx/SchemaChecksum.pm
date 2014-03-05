@@ -4,7 +4,7 @@ use 5.010;
 use Moose;
 
 # ABSTRACT: Generate and compare checksums of database schematas
-our $VERSION = '1.004';
+our $VERSION = '1.005';
 
 use DBI;
 use Digest::SHA1;
@@ -273,18 +273,17 @@ sub _build_schemadump_table {
     my $column_info = $sth_col->fetchall_hashref('COLUMN_NAME');
     while ( my ( $column, $data ) = each %$column_info ) {
         my $column_data = $self->_build_schemadump_column($schema,$table,$column,$data);
-        delete $column_data->{ORDINAL_POSITION};
         $relevants{columns}->{$column} = $column_data
             if $column_data;
     }
 
-    # Foreign keys
+    # Foreign keys (only use a few selected meta-fields)
     my $sth_fk = $dbh->foreign_key_info( undef, undef, undef, $self->catalog, $schema, $table );
     if ($sth_fk) {
         my $fk={};
         while (my $data = $sth_fk->fetchrow_hashref) {
-            delete $data->{ORDINAL_POSITION};
-            $fk->{$data->{FK_COLUMN_NAME}} = $data;
+            my %useful = map { $_ => $data->{$_}} qw(UK_COLUMN_NAME UK_TABLE_NAME UK_TABLE_SCHEM);
+            $fk->{$data->{FK_COLUMN_NAME}} = \%useful;
         }
         $relevants{foreign_keys} = $fk if keys %$fk;
     }
