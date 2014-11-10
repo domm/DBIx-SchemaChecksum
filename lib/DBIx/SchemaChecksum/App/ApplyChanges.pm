@@ -106,8 +106,7 @@ sub apply_file {
             } catch {
                 $dbh->rollback;
                 say "SQL error: $_";
-                say "ABORTING!";
-                return;
+                die "ABORTING!";
             };
             say "Successful!" if $self->verbose;
         }
