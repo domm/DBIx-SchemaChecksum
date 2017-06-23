@@ -101,14 +101,17 @@ sub apply_file {
 
             next unless $command;
             say "Executing SQL statement: $command" if $self->verbose;
-            try {
-                $dbh->do($command)
-            } catch {
+            my $success = try {
+                $dbh->do($command);
+                return 1;
+            }
+            catch {
                 $dbh->rollback;
-                say "SQL error: $_";
+                say "SQL error: $_" unless $dbh->{PrintError};
                 say "ABORTING!";
-                return;
+                return undef;
             };
+            return unless $success; # abort all further changes
             say "Successful!" if $self->verbose;
         }
 
