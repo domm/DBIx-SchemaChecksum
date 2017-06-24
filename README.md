@@ -1,0 +1,416 @@
+# NAME
+
+DBIx::SchemaChecksum - Manage your datebase schema via checksums
+
+# VERSION
+
+version 1.100
+
+# SYNOPSIS
+
+    my $sc = DBIx::SchemaChecksum->new( dbh => $dbh );
+    print $sc->checksum;
+
+# DESCRIPTION
+
+When you're dealing with several instances of the same database (eg.
+developer, testing, stage, production), it is crucial to make sure
+that all databases use the same schema. This can be quite an
+hair-pulling experience, and this module should help you keep your
+hair (if you're already bald, it won't make your hair grow back,
+sorry...)
+
+`DBIx::SchemaChecksum` gets schema information (tables, columns,
+primary keys, foreign keys and some more depending on your DB) and
+generates a SHA1 digest. This digest can then be used to easily verify
+schema consistency across different databases, and to build an update
+graph of changes. Therefor, `DBIx::SchemaChecksum` does not requires
+you to add a meta-table to your database to keep track of which
+changes have already been deployed.
+
+**Caveat:** The same schema might produce different checksums on
+different database versions.
+
+**Caveat:** `DBIx::SchemaChecksum` only works with database engines
+that support changes to the schema inside a transaction. We know this
+works wit PostgreSQL and SQLite. We know it does not work with MySQL
+and Oracle. We don't know how other database engines behave, but would
+be happy to hear about your experiences.
+
+## RUNNING DBIx::SchemaChecksum
+
+Please take a look at the [dbchecksum](https://metacpan.org/pod/bin#dbchecksum) script included
+in this distribution. It provides a nice and powerful commandline
+interface to make working with your schema a breeze.
+
+## EXAMPLE WORKFLOW
+
+So have this genious idea for a new startup that will make you incredibly rich and famous. Usually such ideas involve a database. So you grab your [favourite database engine](http://postgresql.org/) and start a new database:
+
+    ~/Gnomes$ createdb gnomes    # createdb is a postgres tool
+
+Of course this new DB is rather empty:
+
+    gnomes=# \d
+    No relations found.
+
+So you think long and hard about your database schema and write it down
+
+    ~/Gnomes$ cat sql/handcrafted_schema.sql
+    create table underpants (
+      id serial primary key,
+      type text,
+      size text,
+      color text
+    );
+
+But instead of going down the rabbit hole of manually keeping the
+dev-DB on your laptop, the one on the workstation in the office, the
+staging and the production one in sync (and don't forget of all the
+databases running on the laptops of the countless coding monkeys
+you're going to hire after all the VC money starts flowing), you grab
+a (free!) copy of `DBIx::SchemaChecksum`
+
+    ~/Gnomes$ cpanm DBIx::SchemaChecksum
+    .. wait a bit while the giant, on which shoulders we are standing, is being assembled
+    Successfully installed DBIx-SchemaChecksum
+    42 distribution installed
+
+Now you can create a new `changes file`:
+
+    ~/Gnomes$ dbchecksum new_changes_file --sqlsnippetdir sql --dsn dbi:Pg:dbname=gnomes --change_name "inital schema"
+    New change-file ready at sql/inital_schema.sql
+
+Let's take a look:
+
+    ~/Gnomes$ cat sql/inital_schema.sql
+    -- preSHA1sum:  54aa14e7b7e54cce8ae07c441f6bda316aa8458c
+    -- postSHA1sum: xxx-New-Checksum-xxx
+    -- inital schema
+
+Each `changes file` contains two very import "header" lines masked as a SQL comment:
+
+`preSHA1sum` is the checksum of the DB schema before the changes in
+this file have been applied. `postSHA1sum` is (you probably guessed
+it) the checksum we expect after the changes have been applied.
+Currently the `postSHA1sum` is "xxx-New-Checksum-xxx" because have
+neither defined nor run the changes yet.
+
+So let's append the handcrafted schema from earlier to the change file:
+
+    ~/Gnomes$ cat sql/handcrafted_schema.sql >> sql/inital_schema.sql
+
+The `changes file` now looks like this:
+
+    ~/Gnomes$ cat sql/inital_schema.sql
+    -- preSHA1sum:  54aa14e7b7e54cce8ae07c441f6bda316aa8458c
+    -- postSHA1sum: xxx-New-Checksum-xxx
+    -- inital schema
+
+    create table underpants (
+      id serial primary key,
+      type text,
+      size text,
+      color text
+    );
+
+Let's apply this schema change, so we can finally start coding (you
+just can't wait to get rich, can you?)
+
+    ~/Gnomes$ dbchecksum apply_changes --sqlsnippetdir sql --dsn dbi:Pg:dbname=gnomes
+    Apply inital_schema.sql? [y/n] [y]
+    post checksum mismatch!
+      expected 
+      got      611481f7599cc286fa539dbeb7ea27f049744dc7
+    ABORTING!
+
+Woops! What happend here? Why couldn't the change be applied? Well, we
+haven't yet defined the `postSHA1sum`, so we cannot be sure that the
+database is in the state we expect it to be.
+
+When you author a sql change, you will always have to first apply the
+change to figure out the new `postSHA1sum`. As soon as
+`DBIx::SchemaChecksum` tells you the checksum the DB will have after
+the change is applied, you have to add the new checksum to your
+`changes file`:
+
+    ~/Gnomes$ vim sql/inital_schema.sql
+    # replace xxx-New-Checksum-xxx with 611481f7599cc286fa539dbeb7ea27f049744dc7
+
+    ~/Gnomes$ head -2 sql/inital_schema.sql 
+    -- preSHA1sum:  54aa14e7b7e54cce8ae07c441f6bda316aa8458c
+    -- postSHA1sum: 611481f7599cc286fa539dbeb7ea27f049744dc7
+
+Now we can try again:
+
+    ~/Gnomes$ dbchecksum apply_changes --sqlsnippetdir sql --dsn dbi:Pg:dbname=gnomes
+    Apply inital_schema.sql? [y/n] [y]
+    post checksum OK
+    No more changes
+
+Yay, this looks much better!
+
+Now you can finally start to collect underpants!
+
+Some weeks later (you have now convinced a friend to join you in your quest for fortune) a `git pull` drops a new file into your `sql` directory. It seems that your colleague needs some teaks to the database:
+
+    ~/Gnomes$ cat sql/underpants_need_washing.sql
+    -- preSHA1sum:  611481f7599cc286fa539dbeb7ea27f049744dc7
+    -- postSHA1sum: 094ef4321e60b50c1d34529c312ecc2fcbbdfb51
+    -- underpants need washing
+    
+    ALTER TABLE underpants ADD COLUMN needs_washing BOOLEAN NOT NULL DEFAULT false;
+
+Seems reasonable, so you apply it:
+
+    ~/Gnomes$ dbchecksum apply_changes --sqlsnippetdir sql --dsn dbi:Pg:dbname=gnomes
+    Apply underpants_need_washing.sql? [y/n] [y]
+    post checksum OK
+    No more changes
+
+Now that was easy!
+
+### Making things even easier: Config file
+
+`DBIx::SchemaChecksum` uses [MooseX::App](https://metacpan.org/pod/MooseX::App) to power the commandline
+interface. We use the `Config` and `ConfigHome` plugins, so you can
+pack some of the flags into a config file, for even less typing (and typos):
+
+    ~/Gnomes$ cat dbchecksum.yml
+    global:
+      sqlsnippetdir: sql
+      dsn: dbi:Pg:dbname=gnomes
+
+Now run:
+
+    ~/Gnomes$ dbchecksum apply_changes --config dbchecksum.yml
+    db checksum 094ef4321e60b50c1d34529c312ecc2fcbbdfb51 matching sql/underpants_need_washing.sql
+
+Or you can store the config file into your `~/.dbchecksum/config.yml`:
+
+    ~/Gnomes$ cat ~/.dbchecksum/config.yml
+    global:
+      sqlsnippetdir: sql
+      dsn: dbi:Pg:dbname=gnomes
+
+And it magically works:
+
+    ~/Gnomes$ dbchecksum apply_changes
+    db checksum 094ef4321e60b50c1d34529c312ecc2fcbbdfb51 matching sql/underpants_need_washing.sql
+
+## TIPS & TRICKS
+
+### Using 'checksum --show\_dump' to find inconsistencies between databases
+
+Sometimes two databases will produce different checksums. This can be
+caused by a number of things. A good method to figure out what's
+causing the problem is running `dbchecksum checksum --show_dump `
+some\_name> on the databases causing the problem. Then you can use
+`diff` or `vim -d` to inspect the raw dump.
+
+Some problems we have encountered, and how to fix them:
+
+- Manual changes
+
+    Somebody did a manual change to a database (maybe an experiment on a
+    local DB, or some quick-fix on a live DB).
+
+    **Fix:** Revert the change. Maybe make a proper change file if the
+    change makes sense for the project.
+
+- Bad search-path
+
+    The `search_paths` of the DBs differ. This can cause subtile
+    diferences in the way keys and references are reported, thus causing a
+    different checksum.
+
+    **Fix:** Make sure all DBs use the same `search_path`.
+
+- Other schema-related troubles
+
+    Maybe the two instances use different values for `--schemata`?
+
+    **Fix:** Use the same `--schemata` everywhere. Put them in a
+    config-file or write a wrapper script.
+
+- Just weird diffs
+
+    Maybe the systems are using different version of the database server,
+    client, `DBI` or `DBD::*`. While we try hard to filter out
+    version-specific differences, this might still cause problems.
+
+    **Fix:** Use the same versions on all machines.
+
+# METHODS
+
+## checksum
+
+    my $sha1_hex = $self->checksum();
+
+Gets the schemadump and runs it through Digest::SHA1, returning the current checksum.
+
+## schemadump
+
+    my $schemadump = $self->schemadump;
+
+Returns a string representation of the whole schema (as a Data::Dumper Dump).
+
+Lazy Moose attribute.
+
+## \_build\_schemadump
+
+Internal method to build [schemadump](https://metacpan.org/pod/schemadump). Keep out!
+
+## \_build\_schemadump\_schema
+
+    my $hashref = $self->_build_schemadump_schema( $schema );
+
+This is the main entry point for checksum calculations per schema.
+Method-modifiy it if you need to alter the complete schema data
+structure before/after checksumming.
+
+Returns a HashRef like:
+
+    {
+        tables => $hash_ref
+    }
+
+## \_build\_schemadump\_tables
+
+    my $hashref = $self->_build_schemadump_tables( $schema );
+
+Iterate through all tables in a schema, calling
+[\_build\_schemadump\_table](https://metacpan.org/pod/_build_schemadump_table) for each table and collecting the results
+in a HashRef
+
+## \_build\_schemadump\_table
+
+    my $hashref = $self->_build_schemadump_table( $schema, $table );
+
+Get metadata on a table (columns, primary keys & foreign keys) via DBI
+introspection.
+
+This is a good place to method-modify if you need some special processing for your database
+
+Returns a hashref like
+
+    {
+        columns      => $data,
+        primary_keys => $data,
+        foreign_keys => $data,
+    }
+
+## \_build\_schemadump\_column
+
+    my $hashref = $self->_build_schemadump_column( $schema, $table, $column, $raw_dbi_data );
+
+Does some cleanup on the data returned by DBI.
+
+## update\_path
+
+    my $update_info = $self->update_path
+
+Lazy Moose attribute that returns the datastructure needed by [apply\_sql\_update](https://metacpan.org/pod/apply_sql_update).
+
+## \_build\_update\_path
+
+`_build_update_path` reads in all files ending in ".sql" in `$self->sqlsnippetdir`.
+It builds something like a linked list of files, which are chained by their
+`preSHA1sum` and `postSHA1sum`.
+
+## get\_checksums\_from\_snippet
+
+    my ($pre, $post) = $self->get_checksums_from_snippet( $filename );
+
+Returns a list of the preSHA1sum and postSHA1sum for the given file in ` sqlnippetdir`.
+
+The file has to contain this info in SQL comments, eg:
+
+    -- preSHA1sum: 89049e457886a86886a4fdf1f905b69250a8236c
+    -- postSHA1sum: d9a02517255045167053ea92dace728e1389f8ca
+
+    alter table foo add column bar;
+
+## dbh
+
+Database handle (DBH::db). Moose attribute
+
+## catalog
+
+The database catalog searched for data. Not implemented by all DBs. See `DBI::table_info`
+
+Default `%`.
+
+Moose attribute
+
+## schemata
+
+An Arrayref containg names of schematas to include in checksum calculation. See `DBI::table_info`
+
+Default `%`.
+
+Moose attribute
+
+## sqlsnippetdir
+
+Path to the directory where the sql change files are stored.
+
+Moose attribute
+
+## verbose
+
+Be verbose or not. Default: 0
+
+## driveropts
+
+Additional options for the specific database driver.
+
+# SEE ALSO
+
+["dbchecksum" in  bin](https://metacpan.org/pod/&#x20;bin#dbchecksum) for a commandline frontend powered by [MooseX::App](https://metacpan.org/pod/MooseX::App)
+
+There are quite a lot of other database schema management tools out
+there, but nearly all of them need to store meta-info in some magic
+table in your database.
+
+## Talks
+
+You can find more information on the rational, usage & implementation
+in the slides for my talk at the Austrian Perl Workshop 2012,
+available here: [http://domm.plix.at/talks/dbix\_schemachecksum.html](http://domm.plix.at/talks/dbix_schemachecksum.html)
+
+# ACKNOWLEDGEMENTS
+
+Thanks to
+
+- Klaus Ita and Armin Schreger for writing the initial core code. I 
+just glued it together and improved it a bit over the years.
+- revdev, a nice litte software company run by Koki, Domm 
+([http://search.cpan.org/~domm/](http://search.cpan.org/~domm/)) and Maros ([http://search.cpan.org/~maros/](http://search.cpan.org/~maros/)) from 2008 to 2011. We initialy wrote `DBIx::SchemaChecksum` for our work at revdev.
+- [validad.com](https://www.validad.com/) which grew out of revdev and still uses (and supports) `DBIx::SchemaChecksum every day.`
+-
+
+# AUTHORS
+
+- Thomas Klausner <domm@cpan.org>
+- Maroš Kollár <maros@cpan.org>
+- Klaus Ita <koki@worstofall.com>
+
+# COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2012 by Thomas Klausner, Maroš Kollár, Klaus Ita.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+# POD ERRORS
+
+Hey! **The above document had some coding errors, which are explained below:**
+
+- Around line 378:
+
+    L<> starts or ends with whitespace
+
+- Around line 402:
+
+    Unterminated C<...> sequence
