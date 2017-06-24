@@ -1,7 +1,7 @@
 package DBIx::SchemaChecksum::App::Checksum;
 use 5.010;
 
-# ABSTRACT: DBIx::SchemaChecksum command checksum
+# ABSTRACT: get the current DB checksum
 
 use MooseX::App::Command;
 extends qw(DBIx::SchemaChecksum::App);
@@ -22,3 +22,19 @@ sub run {
 
 __PACKAGE__->meta->make_immutable();
 1;
+
+=pod
+
+=head1 DESCRIPTION
+
+Calculate the current checksum and report it. Use C<--show_dump> to
+show the string dump on which the checksum is based.
+
+=head2 dfgfdg
+
+dfg
+
+=cut
+
+
+

@@ -1,9 +1,9 @@
 package DBIx::SchemaChecksum::App;
 use 5.010;
-use MooseX::App 1.21 qw(Config);
+use MooseX::App 1.21 qw(Config ConfigHome);
 extends qw(DBIx::SchemaChecksum);
 
-# ABSTRACT: App base class
+# ABSTRACT: Manage your datebase schema via checksums
 
 use DBI;
 
@@ -37,4 +37,24 @@ sub _build_dbh {
 
 __PACKAGE__->meta->make_immutable();
 1;
+
+=pod
+
+=head1 DESCRIPTION
+
+Manage your datebase schema via checksums
+
+=over
+
+=item * Use C<checksum> to calculate the current checksum of your database.
+
+=item * Use C<new_changes_file> to generate a new db update script based on the current checksum.
+
+=item * Use C<apply_changes> to apply all update scripts starting from the current checksum.
+
+=back
+
+For more background information, check out the man-page via C<perldoc DBIx::SchemaChecksum> or on L<https://metacpan.org/pod/DBIx::SchemaChecksum>
+
+=cut
 
