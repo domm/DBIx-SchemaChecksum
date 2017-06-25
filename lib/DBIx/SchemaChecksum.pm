@@ -150,7 +150,7 @@ a (free!) copy of C<DBIx::SchemaChecksum>
 
 Now you can create a new C<changes file>:
 
-  ~/Gnomes$ dbchecksum new_changes_file --sqlsnippetdir sql --dsn dbi:Pg:dbname=gnomes --change_name "inital schema"
+  ~/Gnomes$ dbchecksum new_changes_file --sqlsnippetdir sql --dsn dbi:Pg:dbname=gnomes --change_name "initial schema"
   New change-file ready at sql/inital_schema.sql
 
 Let's take a look:
@@ -583,7 +583,7 @@ sub _build_schemadump_column {
 
     my $update_info = $self->update_path
 
-Lazy Moose attribute that returns the datastructure needed by L<apply_sql_update>.
+Lazy Moose attribute that returns the data structure needed by L<apply_sql_update>.
 
 =method _build_update_path
 
@@ -695,7 +695,7 @@ Moose attribute
 
 =method schemata
 
-An Arrayref containg names of schematas to include in checksum calculation. See C<DBI::table_info>
+An Arrayref containing names of schematas to include in checksum calculation. See C<DBI::table_info>
 
 Default C<%>.
 
@@ -717,7 +717,7 @@ Additional options for the specific database driver.
 
 =head1 SEE ALSO
 
-L<bin/dbchecksum> for a commandline frontend powered by L<MooseX::App>
+L<bin/dbchecksum> for a command line frontend powered by L<MooseX::App>
 
 There are quite a lot of other database schema management tools out
 there, but nearly all of them need to store meta-info in some magic
@@ -729,7 +729,7 @@ You can find more information on the rational, usage & implementation
 in the slides for my talk at the Austrian Perl Workshop 2012,
 available here: L<http://domm.plix.at/talks/dbix_schemachecksum.html>
 
-=head1 ACKNOWLEDGEMENTS
+=head1 ACKNOWLEDGMENTS
 
 Thanks to
 
@@ -738,8 +738,8 @@ Thanks to
 =item * Klaus Ita and Armin Schreger for writing the initial core code. I 
 just glued it together and improved it a bit over the years.
 
-=item * revdev, a nice litte software company run by Koki, Domm 
-(L<http://search.cpan.org/~domm/>) and Maros (L<http://search.cpan.org/~maros/>) from 2008 to 2011. We initialy wrote C<DBIx::SchemaChecksum> for our work at revdev.
+=item * revdev, a nice little software company run by Koki, Domm 
+(L<http://search.cpan.org/~domm/>) and Maros (L<http://search.cpan.org/~maros/>) from 2008 to 2011. We initially wrote C<DBIx::SchemaChecksum> for our work at revdev.
 
 =item * L<validad.com|https://www.validad.com/> which grew out of revdev and still uses (and supports) C<DBIx::SchemaChecksum> every day.
 

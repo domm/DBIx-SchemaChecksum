@@ -16,7 +16,7 @@ __END__
 
 Please run
 
-  scs.pl help
+  dbchecksum help
 
 to get information on available commands and command line options.
 
