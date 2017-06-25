@@ -66,7 +66,7 @@ So you think long and hard about your database schema and write it down
 
 But instead of going down the rabbit hole of manually keeping the
 dev-DB on your laptop, the one on the workstation in the office, the
-staging and the production one in sync (and don't forget of all the
+staging and the production one in sync (and don't forget all the
 databases running on the laptops of the countless coding monkeys
 you're going to hire after all the VC money starts flowing), you grab
 a (free!) copy of `DBIx::SchemaChecksum`
@@ -93,7 +93,7 @@ Each `changes file` contains two very import "header" lines masked as a SQL comm
 `preSHA1sum` is the checksum of the DB schema before the changes in
 this file have been applied. `postSHA1sum` is (you probably guessed
 it) the checksum we expect after the changes have been applied.
-Currently the `postSHA1sum` is "xxx-New-Checksum-xxx" because have
+Currently the `postSHA1sum` is "xxx-New-Checksum-xxx" because we have
 neither defined nor run the changes yet.
 
 So let's append the handcrafted schema from earlier to the change file:
@@ -198,14 +198,19 @@ And it magically works:
     ~/Gnomes$ dbchecksum apply_changes
     db checksum 094ef4321e60b50c1d34529c312ecc2fcbbdfb51 matching sql/underpants_need_washing.sql
 
+Profit!
+
 ## TIPS & TRICKS
+
+We have been using `DBIx::SchemaChecksum` since 2008 and encountered
+a few issues. Here are our solutions:
 
 ### Using 'checksum --show\_dump' to find inconsistencies between databases
 
 Sometimes two databases will produce different checksums. This can be
 caused by a number of things. A good method to figure out what's
-causing the problem is running `dbchecksum checksum --show_dump `
-some\_name> on the databases causing the problem. Then you can use
+causing the problem is running `<dbchecksum checksum --show_dump ` some\_name>>
+on the databases causing the problem. Then you can use
 `diff` or `vim -d` to inspect the raw dump.
 
 Some problems we have encountered, and how to fix them:
@@ -240,6 +245,57 @@ Some problems we have encountered, and how to fix them:
     version-specific differences, this might still cause problems.
 
     **Fix:** Use the same versions on all machines.
+
+### Use show\_update\_path if DBIx::SchemaChecksum cannot run on the database server
+
+Sometimes it's impossible to get `DBIx::SchemaChecksum` installed on
+the database server (or on some other machine, I have horrible
+recollections about a colleague using Windows..). And the sysadmin
+won't let you access the database over the network...
+
+**Fix:** Prepare all changes on your local machine, and run them manually on the target machine.
+
+    ~/Gnomes$ dbchecksum show_update_path --from_checksum 54aa14e7b7e54cce8ae07c441f6bda316aa8458c
+    inital_schema.sql (611481f7599cc286fa539dbeb7ea27f049744dc7)
+    underpants_need_washing.sql (094ef4321e60b50c1d34529c312ecc2fcbbdfb51)
+    No update found that's based on 094ef4321e60b50c1d34529c312ecc2fcbbdfb51.
+
+Now you could import the changes manually on the server. But it's even
+easier using the `--output` flag:
+
+    ~/Gnomes$ dbchecksum show_update_path --output psql --dbname gnomes --from_checksum 54aa14e7b7e54cce8ae07c441f6bda316aa8458c
+    psql gnomes -1 -f inital_schema.sql
+    psql gnomes -1 -f underpants_need_washing.sql
+    # No update found that's based on 094ef4321e60b50c1d34529c312ecc2fcbbdfb51.
+
+You could pipe this into `changes.sh` and then run that.
+
+Or use `--output concat`:
+
+    ~/Gnomes$ dbchecksum show_update_path --output concat --from_checksum 54aa14e7b7e54cce8ae07c441f6bda316aa8458c > changes.sql
+    ~/Gnomes$ cat changes.sql
+    -- file: inital_schema.sql
+    -- preSHA1sum:  54aa14e7b7e54cce8ae07c441f6bda316aa8458c
+    -- postSHA1sum: 611481f7599cc286fa539dbeb7ea27f049744dc7
+    -- inital schema
+    
+    create table underpants (
+      id serial primary key,
+      type text,
+      size text,
+      color text
+    );
+    
+    -- file: underpants_need_washing.sql
+    -- preSHA1sum:  611481f7599cc286fa539dbeb7ea27f049744dc7
+    -- postSHA1sum: 094ef4321e60b50c1d34529c312ecc2fcbbdfb51
+    -- underpants need washing
+    
+    ALTER TABLE underpants ADD COLUMN needs_washing BOOLEAN NOT NULL DEFAULT false;
+    
+    -- No update found that's based on 094ef4321e60b50c1d34529c312ecc2fcbbdfb51.
+
+Happyness!
 
 # METHODS
 
@@ -367,7 +423,7 @@ Additional options for the specific database driver.
 
 # SEE ALSO
 
-["dbchecksum" in  bin](https://metacpan.org/pod/&#x20;bin#dbchecksum) for a commandline frontend powered by [MooseX::App](https://metacpan.org/pod/MooseX::App)
+["dbchecksum" in bin](https://metacpan.org/pod/bin#dbchecksum) for a commandline frontend powered by [MooseX::App](https://metacpan.org/pod/MooseX::App)
 
 There are quite a lot of other database schema management tools out
 there, but nearly all of them need to store meta-info in some magic
@@ -387,7 +443,7 @@ Thanks to
 just glued it together and improved it a bit over the years.
 - revdev, a nice litte software company run by Koki, Domm 
 ([http://search.cpan.org/~domm/](http://search.cpan.org/~domm/)) and Maros ([http://search.cpan.org/~maros/](http://search.cpan.org/~maros/)) from 2008 to 2011. We initialy wrote `DBIx::SchemaChecksum` for our work at revdev.
-- [validad.com](https://www.validad.com/) which grew out of revdev and still uses (and supports) `DBIx::SchemaChecksum every day.`
+- [validad.com](https://www.validad.com/) which grew out of revdev and still uses (and supports) `DBIx::SchemaChecksum` every day.
 -
 
 # AUTHORS
@@ -402,15 +458,3 @@ This software is copyright (c) 2012 by Thomas Klausner, Maroš Kollár, Klaus It
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
-
-# POD ERRORS
-
-Hey! **The above document had some coding errors, which are explained below:**
-
-- Around line 378:
-
-    L<> starts or ends with whitespace
-
-- Around line 402:
-
-    Unterminated C<...> sequence

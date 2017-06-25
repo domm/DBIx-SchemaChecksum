@@ -138,7 +138,7 @@ So you think long and hard about your database schema and write it down
 
 But instead of going down the rabbit hole of manually keeping the
 dev-DB on your laptop, the one on the workstation in the office, the
-staging and the production one in sync (and don't forget of all the
+staging and the production one in sync (and don't forget all the
 databases running on the laptops of the countless coding monkeys
 you're going to hire after all the VC money starts flowing), you grab
 a (free!) copy of C<DBIx::SchemaChecksum>
@@ -165,7 +165,7 @@ Each C<changes file> contains two very import "header" lines masked as a SQL com
 C<preSHA1sum> is the checksum of the DB schema before the changes in
 this file have been applied. C<postSHA1sum> is (you probably guessed
 it) the checksum we expect after the changes have been applied.
-Currently the C<postSHA1sum> is "xxx-New-Checksum-xxx" because have
+Currently the C<postSHA1sum> is "xxx-New-Checksum-xxx" because we have
 neither defined nor run the changes yet.
 
 So let's append the handcrafted schema from earlier to the change file:
@@ -281,8 +281,8 @@ a few issues. Here are our solutions:
 
 Sometimes two databases will produce different checksums. This can be
 caused by a number of things. A good method to figure out what's
-causing the problem is running C<dbchecksum checksum --show_dump >
-some_name> on the databases causing the problem. Then you can use
+causing the problem is running C<<dbchecksum checksum --show_dump > some_name>>
+on the databases causing the problem. Then you can use
 C<diff> or C<vim -d> to inspect the raw dump.
 
 Some problems we have encountered, and how to fix them:
@@ -372,6 +372,8 @@ Or use C<--output concat>:
   -- No update found that's based on 094ef4321e60b50c1d34529c312ecc2fcbbdfb51.
 
 Happyness!
+
+=head1 METHODS
 
 =cut
 
@@ -739,7 +741,7 @@ just glued it together and improved it a bit over the years.
 =item * revdev, a nice litte software company run by Koki, Domm 
 (L<http://search.cpan.org/~domm/>) and Maros (L<http://search.cpan.org/~maros/>) from 2008 to 2011. We initialy wrote C<DBIx::SchemaChecksum> for our work at revdev.
 
-=item * L<validad.com|https://www.validad.com/> which grew out of revdev and still uses (and supports) C<DBIx::SchemaChecksum every day.
+=item * L<validad.com|https://www.validad.com/> which grew out of revdev and still uses (and supports) C<DBIx::SchemaChecksum> every day.
 
 =item
 
