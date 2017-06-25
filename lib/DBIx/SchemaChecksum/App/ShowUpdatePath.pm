@@ -1,14 +1,16 @@
 package DBIx::SchemaChecksum::App::ShowUpdatePath;
 use 5.010;
 
-# ABSTRACT: DBIx::SchemaChecksum command show_update_path
+# ABSTRACT: Show the update path
 
 use MooseX::App::Command;
 extends qw(DBIx::SchemaChecksum::App);
 use Carp qw(croak);
+use Moose::Util::TypeConstraints;
 
-option 'from_checksum'  => ( is => 'ro', isa => 'Str' );
-option 'output'  => ( is => 'ro', isa => 'Str', default=>'nice'); # todo enum
+option 'from_checksum'  => ( is => 'ro', isa => 'Str',documentation => q[start update path from this checksum]
+ );
+option 'output'  => ( is => 'ro',  default=>'nice',isa=>enum([qw[ nice concat psql ]]),);
 option 'dbname' => ( is=>'ro', isa=>'Str', default=>'datebase_name');
 option '+sqlsnippetdir' => ( required => 1);
 
@@ -19,9 +21,6 @@ sub run {
 
     $self->show_update_path( $self->from_checksum || $self->checksum );
 
-    if ($self->output eq 'concat') {
-        say $self->_concat;
-    }
 }
 
 sub show_update_path {
@@ -32,6 +31,8 @@ sub show_update_path {
         if ( exists $update_path->{$this_checksum} );
 
     unless ($update) {
+        print "# " if $self->output eq 'psql';
+        print "-- " if $self->output eq 'concat';
         say "No update found that's based on $this_checksum.";
         return;
     }
@@ -53,12 +54,11 @@ sub report_file {
     if ($self->output eq 'nice') {
         say $file->relative($self->sqlsnippetdir) ." ($checksum)";
     }
-    elsif ($self->output eq 'script') {
+    elsif ($self->output eq 'psql') {
         say 'psql '.$self->dbname.' -1 -f '.$file->relative($self->sqlsnippetdir);
     }
     elsif ($self->output eq 'concat') {
-        $self->_concat( $self->_concat
-        . "\n\n-- file: ".$file->relative($self->sqlsnippetdir)."\n".join('',$file->slurp)."\n" );
+        say "\n-- file: ".$file->relative($self->sqlsnippetdir)."\n".join('',$file->slurp)."\n";
     }
 }
 
