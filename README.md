@@ -78,7 +78,7 @@ a (free!) copy of `DBIx::SchemaChecksum`
 
 Now you can create a new `changes file`:
 
-    ~/Gnomes$ dbchecksum new_changes_file --sqlsnippetdir sql --dsn dbi:Pg:dbname=gnomes --change_name "inital schema"
+    ~/Gnomes$ dbchecksum new_changes_file --sqlsnippetdir sql --dsn dbi:Pg:dbname=gnomes --change_name "initial schema"
     New change-file ready at sql/inital_schema.sql
 
 Let's take a look:
@@ -366,7 +366,7 @@ Does some cleanup on the data returned by DBI.
 
     my $update_info = $self->update_path
 
-Lazy Moose attribute that returns the datastructure needed by [apply\_sql\_update](https://metacpan.org/pod/apply_sql_update).
+Lazy Moose attribute that returns the data structure needed by [apply\_sql\_update](https://metacpan.org/pod/apply_sql_update).
 
 ## \_build\_update\_path
 
@@ -401,7 +401,7 @@ Moose attribute
 
 ## schemata
 
-An Arrayref containg names of schematas to include in checksum calculation. See `DBI::table_info`
+An Arrayref containing names of schematas to include in checksum calculation. See `DBI::table_info`
 
 Default `%`.
 
@@ -423,7 +423,7 @@ Additional options for the specific database driver.
 
 # SEE ALSO
 
-["dbchecksum" in bin](https://metacpan.org/pod/bin#dbchecksum) for a commandline frontend powered by [MooseX::App](https://metacpan.org/pod/MooseX::App)
+["dbchecksum" in bin](https://metacpan.org/pod/bin#dbchecksum) for a command line frontend powered by [MooseX::App](https://metacpan.org/pod/MooseX::App)
 
 There are quite a lot of other database schema management tools out
 there, but nearly all of them need to store meta-info in some magic
@@ -435,14 +435,14 @@ You can find more information on the rational, usage & implementation
 in the slides for my talk at the Austrian Perl Workshop 2012,
 available here: [http://domm.plix.at/talks/dbix\_schemachecksum.html](http://domm.plix.at/talks/dbix_schemachecksum.html)
 
-# ACKNOWLEDGEMENTS
+# ACKNOWLEDGMENTS
 
 Thanks to
 
 - Klaus Ita and Armin Schreger for writing the initial core code. I 
 just glued it together and improved it a bit over the years.
-- revdev, a nice litte software company run by Koki, Domm 
-([http://search.cpan.org/~domm/](http://search.cpan.org/~domm/)) and Maros ([http://search.cpan.org/~maros/](http://search.cpan.org/~maros/)) from 2008 to 2011. We initialy wrote `DBIx::SchemaChecksum` for our work at revdev.
+- revdev, a nice little software company run by Koki, Domm 
+([http://search.cpan.org/~domm/](http://search.cpan.org/~domm/)) and Maros ([http://search.cpan.org/~maros/](http://search.cpan.org/~maros/)) from 2008 to 2011. We initially wrote `DBIx::SchemaChecksum` for our work at revdev.
 - [validad.com](https://www.validad.com/) which grew out of revdev and still uses (and supports) `DBIx::SchemaChecksum` every day.
 -
 
