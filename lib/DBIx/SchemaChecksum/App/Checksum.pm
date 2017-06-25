@@ -30,11 +30,5 @@ __PACKAGE__->meta->make_immutable();
 Calculate the current checksum and report it. Use C<--show_dump> to
 show the string dump on which the checksum is based.
 
-=head2 dfgfdg
-
-dfg
-
 =cut
-
-
 

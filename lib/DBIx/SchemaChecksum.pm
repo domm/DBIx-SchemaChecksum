@@ -270,7 +270,12 @@ And it magically works:
   ~/Gnomes$ dbchecksum apply_changes
   db checksum 094ef4321e60b50c1d34529c312ecc2fcbbdfb51 matching sql/underpants_need_washing.sql
 
+Profit!
+
 =head2 TIPS & TRICKS
+
+We have been using C<DBIx::SchemaChecksum> since 2008 and encountered
+a few issues. Here are our solutions:
 
 =head3 Using 'checksum --show_dump' to find inconsistencies between databases
 
@@ -316,6 +321,57 @@ version-specific differences, this might still cause problems.
 B<Fix:> Use the same versions on all machines.
 
 =back
+
+=head3 Use show_update_path if DBIx::SchemaChecksum cannot run on the database server
+
+Sometimes it's impossible to get C<DBIx::SchemaChecksum> installed on
+the database server (or on some other machine, I have horrible
+recollections about a colleague using Windows..). And the sysadmin
+won't let you access the database over the network...
+
+B<Fix:> Prepare all changes on your local machine, and run them manually on the target machine.
+
+  ~/Gnomes$ dbchecksum show_update_path --from_checksum 54aa14e7b7e54cce8ae07c441f6bda316aa8458c
+  inital_schema.sql (611481f7599cc286fa539dbeb7ea27f049744dc7)
+  underpants_need_washing.sql (094ef4321e60b50c1d34529c312ecc2fcbbdfb51)
+  No update found that's based on 094ef4321e60b50c1d34529c312ecc2fcbbdfb51.
+
+Now you could import the changes manually on the server. But it's even
+easier using the C<--output> flag:
+
+  ~/Gnomes$ dbchecksum show_update_path --output psql --dbname gnomes --from_checksum 54aa14e7b7e54cce8ae07c441f6bda316aa8458c
+  psql gnomes -1 -f inital_schema.sql
+  psql gnomes -1 -f underpants_need_washing.sql
+  # No update found that's based on 094ef4321e60b50c1d34529c312ecc2fcbbdfb51.
+
+You could pipe this into F<changes.sh> and then run that.
+
+Or use C<--output concat>:
+
+  ~/Gnomes$ dbchecksum show_update_path --output concat --from_checksum 54aa14e7b7e54cce8ae07c441f6bda316aa8458c > changes.sql
+  ~/Gnomes$ cat changes.sql
+  -- file: inital_schema.sql
+  -- preSHA1sum:  54aa14e7b7e54cce8ae07c441f6bda316aa8458c
+  -- postSHA1sum: 611481f7599cc286fa539dbeb7ea27f049744dc7
+  -- inital schema
+  
+  create table underpants (
+    id serial primary key,
+    type text,
+    size text,
+    color text
+  );
+  
+  -- file: underpants_need_washing.sql
+  -- preSHA1sum:  611481f7599cc286fa539dbeb7ea27f049744dc7
+  -- postSHA1sum: 094ef4321e60b50c1d34529c312ecc2fcbbdfb51
+  -- underpants need washing
+  
+  ALTER TABLE underpants ADD COLUMN needs_washing BOOLEAN NOT NULL DEFAULT false;
+  
+  -- No update found that's based on 094ef4321e60b50c1d34529c312ecc2fcbbdfb51.
+
+Happyness!
 
 =cut
 
@@ -659,7 +715,7 @@ Additional options for the specific database driver.
 
 =head1 SEE ALSO
 
-L< bin/dbchecksum> for a commandline frontend powered by L<MooseX::App>
+L<bin/dbchecksum> for a commandline frontend powered by L<MooseX::App>
 
 There are quite a lot of other database schema management tools out
 there, but nearly all of them need to store meta-info in some magic
