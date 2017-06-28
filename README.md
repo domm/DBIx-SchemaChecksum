@@ -4,7 +4,7 @@ DBIx::SchemaChecksum - Manage your datebase schema via checksums
 
 # VERSION
 
-version 1.100
+version 1.101
 
 # SYNOPSIS
 
@@ -33,7 +33,7 @@ different database versions.
 
 **Caveat:** `DBIx::SchemaChecksum` only works with database engines
 that support changes to the schema inside a transaction. We know this
-works wit PostgreSQL and SQLite. We know it does not work with MySQL
+works with PostgreSQL and SQLite. We know it does not work with MySQL
 and Oracle. We don't know how other database engines behave, but would
 be happy to hear about your experiences.
 
@@ -45,7 +45,11 @@ interface to make working with your schema a breeze.
 
 ## EXAMPLE WORKFLOW
 
-So have this genious idea for a new startup that will make you incredibly rich and famous. Usually such ideas involve a database. So you grab your [favourite database engine](http://postgresql.org/) and start a new database:
+So have this genious idea for a new startup that will make you incredibly rich and famous. 
+
+### Collect underpants
+
+Usually such ideas involve a database. So you grab your [favourite database engine](http://postgresql.org/) and start a new database:
 
     ~/Gnomes$ createdb gnomes    # createdb is a postgres tool
 
@@ -152,6 +156,8 @@ Yay, this looks much better!
 
 Now you can finally start to collect underpants!
 
+### Teamwork
+
 Some weeks later (you have now convinced a friend to join you in your quest for fortune) a `git pull` drops a new file into your `sql` directory. It seems that your colleague needs some teaks to the database:
 
     ~/Gnomes$ cat sql/underpants_need_washing.sql
@@ -198,7 +204,9 @@ And it magically works:
     ~/Gnomes$ dbchecksum apply_changes
     db checksum 094ef4321e60b50c1d34529c312ecc2fcbbdfb51 matching sql/underpants_need_washing.sql
 
-Profit!
+### Profit!
+
+This section is left empty as an exercise for the reader!
 
 ## TIPS & TRICKS
 
