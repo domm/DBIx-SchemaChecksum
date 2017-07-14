@@ -4,7 +4,7 @@ use 5.010;
 use Moose;
 
 # ABSTRACT: Manage your datebase schema via checksums
-our $VERSION = '1.100';
+our $VERSION = '1.101';
 
 use DBI;
 use Digest::SHA1;
