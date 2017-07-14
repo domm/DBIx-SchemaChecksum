@@ -69,7 +69,10 @@ __PACKAGE__->meta->make_immutable();
 
 =head1 DESCRIPTION
 
-Show the whole update path starting from the current checksum, or from the one provided via C<--from_checksum>. Use C<--output concat> to concat all changes to STDOUT. Use C<--output psql --dbname your-db> to print some C<psql> commands to apply changes.
+Show the whole update path starting from the current checksum, or from
+the one provided via C<--from_checksum>. Use 'C<--output concat>' to
+concat all changes to STDOUT. Use 'C<--output psql --dbname your-db>'
+to print some C<psql> commands to apply changes.
 
 =cut
 

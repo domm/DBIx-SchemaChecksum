@@ -19,3 +19,13 @@ around '_build_schemadump_table' => sub {
 };
 
 1;
+
+__END__
+
+=pod
+
+=head1 DESCRIPTION
+
+Ignore some internal sqlite tables
+
+

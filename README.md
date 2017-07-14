@@ -33,7 +33,7 @@ different database versions.
 
 **Caveat:** `DBIx::SchemaChecksum` only works with database engines
 that support changes to the schema inside a transaction. We know this
-works wit PostgreSQL and SQLite. We know it does not work with MySQL
+works with PostgreSQL and SQLite. We know it does not work with MySQL
 and Oracle. We don't know how other database engines behave, but would
 be happy to hear about your experiences.
 
@@ -45,7 +45,12 @@ interface to make working with your schema a breeze.
 
 ## EXAMPLE WORKFLOW
 
-So have this genious idea for a new startup that will make you incredibly rich and famous. Usually such ideas involve a database. So you grab your [favourite database engine](http://postgresql.org/) and start a new database:
+So you have this genious idea for a new startup that will make you
+incredibly rich and famous...
+
+### Collect underpants
+
+Usually such ideas involve a database. So you grab your [favourite database engine](http://postgresql.org/) and start a new database:
 
     ~/Gnomes$ createdb gnomes    # createdb is a postgres tool
 
@@ -152,7 +157,9 @@ Yay, this looks much better!
 
 Now you can finally start to collect underpants!
 
-Some weeks later (you have now convinced a friend to join you in your quest for fortune) a `git pull` drops a new file into your `sql` directory. It seems that your colleague needs some teaks to the database:
+### Teamwork
+
+Some weeks later (you have now convinced a friend to join you in your quest for fortune) a `git pull` drops a new file into your `sql` directory. It seems that your colleague needs some tweaks to the database:
 
     ~/Gnomes$ cat sql/underpants_need_washing.sql
     -- preSHA1sum:  611481f7599cc286fa539dbeb7ea27f049744dc7
@@ -198,7 +205,69 @@ And it magically works:
     ~/Gnomes$ dbchecksum apply_changes
     db checksum 094ef4321e60b50c1d34529c312ecc2fcbbdfb51 matching sql/underpants_need_washing.sql
 
-Profit!
+### Profit!
+
+This section is left empty as an exercise for the reader!
+
+## Anatomy of a changes-file
+
+`sqlsnippetdir` points to a directory containing so-called `changes
+files`. For a file to be picked up by `dbchecksum` it needs to use
+the extension `.sql`.
+
+The file itself has to contain a header formated as sql comments, i.e.
+starting with `--`. The header has to contain the `preSHA1sum` and
+should include the `postSHA1sum`.
+
+If the `postSHA1sum` is missing, we assume that you don't know it yet and try to apply the change. As the new checksum will not match the empty `postSHA1sum` the change will fail. But we will report the new checksum, which you can now insert into the changes file.
+
+After the header, the changes file should list all sql commands you
+want to apply to change the schema, seperated by a semicolon `;`,
+just as you would type them into your sql prompt.
+
+    -- preSHA1sum:  b1387d808800a5969f0aa9bcae2d89a0d0b4620b
+    -- postSHA1sum: 55df89fd956a03d637b52d13281bc252896f602f
+    
+    CREATE TABLE nochntest (foo TEXT);
+
+Not all commands need to actually alter the schema, you can also
+include sql that just updates some data. In fact, some schmema changes
+even require that: for example, if you want to add a `NOT NULL`
+constraint to a column, you first have to make sure that the column in
+fact does not contain a `NULL`.
+
+    -- preSHA1sum:  c50519c54300ec2670618371a06f9140fa552965
+    -- postSHA1sum: 48dd6b3710a716fb85b005077dc534a8f9c11cba
+    
+    UPDATE foo SET some_field = 42 WHERE some_field IS NULL;
+    ALTER TABLE foo ALTER some_filed SET NOT NULL;
+
+### Creating functions / stored procedures
+
+Functions usually contain semicolons inside the function definition,
+so we cannot split the file on semicolon. Luckily, you can specifiy a different splitter using `-- split-at`. We usually use `----` (again, the SQL comment marker) so the changes file is still valid SQL.
+
+    -- preSHA1sum  c50519c54300ec2670618371a06f9140fa552965
+    -- postSHA1sum 48dd6b3710a716fb85b005077dc534a8f9c11cba
+    -- split-at ------
+
+    ALTER TABLE underpants
+          ADD COLUMN modified timestamp with time zone DEFAULT now() NOT NULL;
+    ------
+    CREATE FUNCTION update_modified() RETURNS trigger
+        LANGUAGE plpgsql
+        AS $$
+    BEGIN
+        if NEW <> OLD THEN
+          NEW.modified = now();
+        END IF;
+        RETURN NEW;
+    END;
+    $$;
+    ------
+    CREATE TRIGGER underpants_modified
+           BEFORE UPDATE ON underpants
+           FOR EACH ROW EXECUTE PROCEDURE update_modified();
 
 ## TIPS & TRICKS
 
@@ -299,6 +368,8 @@ Happyness!
 
 # METHODS
 
+You will only need those methods if you want to use the library itself instead of using the `dbchecksum` wrapper script.
+
 ## checksum
 
     my $sha1_hex = $self->checksum();
@@ -312,10 +383,6 @@ Gets the schemadump and runs it through Digest::SHA1, returning the current chec
 Returns a string representation of the whole schema (as a Data::Dumper Dump).
 
 Lazy Moose attribute.
-
-## \_build\_schemadump
-
-Internal method to build [schemadump](https://metacpan.org/pod/schemadump). Keep out!
 
 ## \_build\_schemadump\_schema
 
@@ -421,6 +488,53 @@ Be verbose or not. Default: 0
 
 Additional options for the specific database driver.
 
+# GLOBAL OPTIONS
+
+## Connecting to the database
+
+These options define how to connect to your database.
+
+### dsn
+
+**Required**. The `Data Source Name (DSN)` as used by [DBI](https://metacpan.org/pod/DBI) to connect to your database.
+
+Some examples: `dbi:SQLite:dbname=sqlite.db`,
+`dbi:Pg:dbname=my_project;host=db.example.com;port=5433`,
+`dbi:Pg:service=my_project_dbadmin`
+
+### user
+
+Username to use to connect to your database.
+
+### password
+
+Password to use to connect to your database.
+
+## Defining the schema dump
+
+These options define which parts of the schema are relevant to the checksum
+
+### catalog
+
+Default: `%`
+
+Needed during [DBI](https://metacpan.org/pod/DBI) introspection. `Pg` does not need it.
+
+### schemata
+
+Default: `%` (all schemata)
+
+If you have several schemata in your database, but only want to consider some for the checksum, use `--schemata` to list the ones you care about. Can be specified more than once to list several schemata:
+
+    dbchecksum apply --schemata foo --schemata bar
+
+### driveropts
+
+Some database drivers might implement further options only relevant
+for the specific driver. As of now, this only applies to
+[DBIx::SchemaChecksum::Driver::Pg](https://metacpan.org/pod/DBIx::SchemaChecksum::Driver::Pg), which defines the driveropts
+`triggers`, `sequences` and `functions`
+
 # SEE ALSO
 
 ["dbchecksum" in bin](https://metacpan.org/pod/bin#dbchecksum) for a command line frontend powered by [MooseX::App](https://metacpan.org/pod/MooseX::App)
@@ -439,11 +553,16 @@ available here: [http://domm.plix.at/talks/dbix\_schemachecksum.html](http://dom
 
 Thanks to
 
-- Klaus Ita and Armin Schreger for writing the initial core code. I 
+- Klaus Ita and Armin Schreger for writing the initial core code. I
 just glued it together and improved it a bit over the years.
-- revdev, a nice little software company run by Koki, Domm 
-([http://search.cpan.org/~domm/](http://search.cpan.org/~domm/)) and Maros ([http://search.cpan.org/~maros/](http://search.cpan.org/~maros/)) from 2008 to 2011. We initially wrote `DBIx::SchemaChecksum` for our work at revdev.
-- [validad.com](https://www.validad.com/) which grew out of revdev and still uses (and supports) `DBIx::SchemaChecksum` every day.
+- revdev, a nice little software company run by Koki, domm
+([http://search.cpan.org/~domm/](http://search.cpan.org/~domm/)) and Maroš ([http://search.cpan.org/~maros/](http://search.cpan.org/~maros/)) from 2008 to 2011. We initially wrote `DBIx::SchemaChecksum` for our work at revdev.
+- [validad.com](https://www.validad.com/) which grew out of
+revdev and still uses (and supports) `DBIx::SchemaChecksum` every
+day.
+- [Farhad](https://twitter.com/Grauwolf) from [Spherical
+Elephant](https://www.sphericalelephant.com) for nagging me into
+writing proper docs.
 -
 
 # AUTHORS

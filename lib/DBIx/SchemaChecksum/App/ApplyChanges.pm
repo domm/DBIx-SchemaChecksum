@@ -9,7 +9,7 @@ use IO::Prompt::Tiny qw(prompt);
 use Try::Tiny;
 
 option '+sqlsnippetdir' => ( required => 1);
-option 'dry_run'        => ( is => 'rw', isa => 'Bool', default => 0 );
+option 'dry_run'        => ( is => 'rw', isa => 'Bool', default => 0, documentation=>'Only list changes, do not apply' );
 has 'no_prompt'    => ( is => 'rw', isa => 'Bool', default => 0, documentation=>'Do not prompt, just use defaults');
 
 sub run {
