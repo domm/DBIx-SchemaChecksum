@@ -1,6 +1,6 @@
 # NAME
 
-DBIx::SchemaChecksum - Manage your datebase schema via checksums
+DBIx::SchemaChecksum - Manage your database schema via checksums
 
 # VERSION
 
