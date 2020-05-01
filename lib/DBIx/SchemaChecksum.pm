@@ -355,7 +355,7 @@ a few issues. Here are our solutions:
 
 Sometimes two databases will produce different checksums. This can be
 caused by a number of things. A good method to figure out what's
-causing the problem is running C<<dbchecksum checksum --show_dump > some_name>>
+causing the problem is running C<< dbchecksum checksum --show_dump > some_name >>
 on the databases causing the problem. Then you can use
 C<diff> or C<vim -d> to inspect the raw dump.
 
