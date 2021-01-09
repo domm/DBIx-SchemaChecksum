@@ -1,10 +1,10 @@
 # NAME
 
-DBIx::SchemaChecksum - Manage your database schema via checksums
+DBIx::SchemaChecksum - Manage your datebase schema via checksums
 
 # VERSION
 
-version 1.102
+version 1.103
 
 # SYNOPSIS
 
@@ -179,7 +179,7 @@ Now that was easy!
 
 ### Making things even easier: Config file
 
-`DBIx::SchemaChecksum` uses [MooseX::App](https://metacpan.org/pod/MooseX::App) to power the commandline
+`DBIx::SchemaChecksum` uses [MooseX::App](https://metacpan.org/pod/MooseX%3A%3AApp) to power the commandline
 interface. We use the `Config` and `ConfigHome` plugins, so you can
 pack some of the flags into a config file, for even less typing (and typos):
 
@@ -532,12 +532,12 @@ If you have several schemata in your database, but only want to consider some fo
 
 Some database drivers might implement further options only relevant
 for the specific driver. As of now, this only applies to
-[DBIx::SchemaChecksum::Driver::Pg](https://metacpan.org/pod/DBIx::SchemaChecksum::Driver::Pg), which defines the driveropts
+[DBIx::SchemaChecksum::Driver::Pg](https://metacpan.org/pod/DBIx%3A%3ASchemaChecksum%3A%3ADriver%3A%3APg), which defines the driveropts
 `triggers`, `sequences` and `functions`
 
 # SEE ALSO
 
-["dbchecksum" in bin](https://metacpan.org/pod/bin#dbchecksum) for a command line frontend powered by [MooseX::App](https://metacpan.org/pod/MooseX::App)
+["dbchecksum" in bin](https://metacpan.org/pod/bin#dbchecksum) for a command line frontend powered by [MooseX::App](https://metacpan.org/pod/MooseX%3A%3AApp)
 
 There are quite a lot of other database schema management tools out
 there, but nearly all of them need to store meta-info in some magic
@@ -567,13 +567,13 @@ writing proper docs.
 
 # AUTHORS
 
-- Thomas Klausner <domm@cpan.org>
+- Thomas Klausner <domm@plix.at>
 - Maroš Kollár <maros@cpan.org>
 - Klaus Ita <koki@worstofall.com>
 
 # COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Thomas Klausner, Maroš Kollár, Klaus Ita.
+This software is copyright (c) 2012 - 2021 by Thomas Klausner, Maroš Kollár, Klaus Ita.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

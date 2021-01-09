@@ -1,10 +1,10 @@
 package DBIx::SchemaChecksum;
 
+# ABSTRACT: Manage your datebase schema via checksums
+# VERSION
+
 use 5.010;
 use Moose;
-
-# ABSTRACT: Manage your datebase schema via checksums
-our $VERSION = '1.102';
 
 use DBI;
 use Digest::SHA1;

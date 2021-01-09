@@ -1,12 +1,12 @@
 #!/usr/bin/perl
 
+# PODNAME: dbchecksum
+# ABSTRACT: wrapper script to run DBIx::SchemaChecksum
+# VERSION
+
 use strict;
 use warnings;
 use DBIx::SchemaChecksum::App;
-
-# PODNAME: dbchecksum
-
-# ABSTRACT: wrapper script to run DBIx::SchemaChecksum
 
 DBIx::SchemaChecksum::App->new_with_command->run();
 

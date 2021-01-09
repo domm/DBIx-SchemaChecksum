@@ -1,11 +1,12 @@
 #!/usr/bin/perl
 
+# PODNAME: scs.pl
+# ABSTRACT: run DBIx::SchemaChecksum, but really you should use dbchecksum
+# VERSION
+
 use strict;
 use warnings;
 use DBIx::SchemaChecksum::App;
-
-# PODNAME: scs.pl
-# ABSTRACT: run DBIx::SchemaChecksum, but really you should use dbchecksum
 
 DBIx::SchemaChecksum::App->new_with_command->run();
 

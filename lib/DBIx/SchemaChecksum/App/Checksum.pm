@@ -1,7 +1,9 @@
 package DBIx::SchemaChecksum::App::Checksum;
-use 5.010;
 
 # ABSTRACT: get the current DB checksum
+# VERSION
+
+use 5.010;
 
 use MooseX::App::Command;
 extends qw(DBIx::SchemaChecksum::App);

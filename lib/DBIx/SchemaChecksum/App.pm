@@ -1,9 +1,11 @@
 package DBIx::SchemaChecksum::App;
+
+# ABSTRACT: Manage your datebase schema via checksums
+# VERSION
+
 use 5.010;
 use MooseX::App 1.21 qw(Config ConfigHome);
 extends qw(DBIx::SchemaChecksum);
-
-# ABSTRACT: Manage your datebase schema via checksums
 
 use DBI;
 

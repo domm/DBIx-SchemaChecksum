@@ -1,7 +1,9 @@
 package DBIx::SchemaChecksum::App::ApplyChanges;
-use 5.010;
 
 # ABSTRACT: Apply changes based on current checksum
+# VERSION
+
+use 5.010;
 
 use MooseX::App::Command;
 extends qw(DBIx::SchemaChecksum::App);

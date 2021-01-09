@@ -1,7 +1,9 @@
 package DBIx::SchemaChecksum::App::NewChangesFile;
-use 5.010;
 
 # ABSTRACT: Generate a new changes-file
+# VERSION
+
+use 5.010;
 
 use MooseX::App::Command;
 extends qw(DBIx::SchemaChecksum::App);
