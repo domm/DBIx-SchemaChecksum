@@ -1,6 +1,8 @@
 Revision history for DBIx-SchemaChecksum
 
 {{$NEXT}}
+
+1.104     2021-01-26 13:11:18+01:00
     - explicitly use File::HomeDir, because MooseX::App only lists it as a recommended prereq
 
 
