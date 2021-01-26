@@ -12,6 +12,7 @@ use Data::Dumper;
 use Path::Class;
 use Carp;
 use File::Find::Rule;
+use File::HomeDir;
 
 has 'dbh' => (
     is => 'ro',
